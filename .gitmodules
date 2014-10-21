@@ -1,0 +1,3 @@
+[submodule "bench/oltpbench"]
+	path = bench/oltpbench
+	url = git@github.com:oltpbenchmark/oltpbench.git
