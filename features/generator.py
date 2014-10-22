@@ -94,8 +94,8 @@ def execute_oltpbench(csv_file):
     cwd = os.getcwd()
     os.chdir(OLTP_BENCH_DIR)
 
-    benchmark = 'ycsb'
-    ob_config_file = '../config/ycsb_config.xml'
+    benchmark = 'tatp'
+    ob_config_file = '../config/' + benchmark + '_config.xml'
     ob_create = 'true'
     ob_load = 'true'
     ob_execute = 'true'
@@ -112,7 +112,7 @@ def execute_oltpbench(csv_file):
     parse_ob_summary(prefix, run);    
     #parse_db_conf(prefix, run);    
 
-    get_stats("ycsb", run) 
+    get_stats(benchmark, run) 
 
     # remove keys with no values
     run = dict((k, v) for k, v in run.iteritems() if v)

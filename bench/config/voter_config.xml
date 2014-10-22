@@ -4,7 +4,7 @@
     <!-- Connection details -->
     <dbtype>postgres</dbtype>
     <driver>org.postgresql.Driver</driver>
-    <DBUrl>jdbc:postgresql://localhost:5432/ycsb</DBUrl>
+    <DBUrl>jdbc:postgresql://localhost:5432/voter</DBUrl>
     <username>postgres</username>
     <password>postgres</password>
     <isolation>TRANSACTION_SERIALIZABLE</isolation>
@@ -12,10 +12,10 @@
     <scalefactor>1</scalefactor>
     
     <!-- The workload -->
-    <terminals>10</terminals>
+    <terminals>4</terminals>
     <works>
         <work>
-          <time>300</time>
+          <time>10</time>
           <rate>10000</rate>
           <weights>100</weights>
         </work>
