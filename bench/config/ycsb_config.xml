@@ -16,7 +16,7 @@
     <terminals>5</terminals>
     <works>
         <work>
-          <time>3</time>
+          <time>2</time>
           <rate>10</rate>
           <weights>90,10,0,0,0,0</weights>
         </work>
