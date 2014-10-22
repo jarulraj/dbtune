@@ -19,6 +19,8 @@ import csv
 from options import *
 from _rl_accel import fp_str
 
+from postgres_driver import get_stats
+
 # # LOGGING CONFIGURATION
 LOG = logging.getLogger(__name__)
 LOG_handler = logging.StreamHandler()
@@ -37,43 +39,43 @@ OLTP_BENCH = "./oltpbenchmark"
 
 
 # Parse SUMMARY
-def parse_ob_summary(output, run):
+def parse_ob_summary(output, map):
     summary_file_name = output + ".summary"
     summary_file = open(summary_file_name, "r")
     
     for line_cnt, line in enumerate(summary_file):
         if line_cnt == 0:
-            run['Timestamp'] = line.strip()   
+            map['Timestamp'] = line.strip()   
         if line_cnt == 1:
-            run['Database'] = line.strip()
+            map['Database'] = line.strip()
         if line_cnt == 2:
-            run['Benchmark'] = line.strip()  
+            map['Benchmark'] = line.strip()  
         if line_cnt == 3:
             entry = line.split(',')
             for pair in entry:
                 pair = pair.strip(' ').strip("\n").strip('[').strip(']')
                 p = pair.split('=')         
-                run['Latency_' + p[0]] = p[1]                                       
+                map['Latency_' + p[0]] = p[1]                                       
         if line_cnt == 4:
-            run['Throughput'] = line.strip()            
+            map['Throughput'] = line.strip()            
         if line_cnt == 5:
             entry = line.strip().split('=');
-            run['Isolation'] = entry[1]    
+            map['Isolation'] = entry[1]    
         if line_cnt == 6:
             entry = line.strip().split('=');
-            run['Scalefactor'] = entry[1]    
+            map['Scalefactor'] = entry[1]    
         if line_cnt == 7:
             entry = line.strip().split('=');
-            run['Terminals'] = entry[1]    
+            map['Terminals'] = entry[1]    
 
 # PARSE DB CONF
-def parse_db_conf(output, run):
+def parse_db_conf(output, map):
     db_conf_file_name = output + ".db.cnf"
     db_conf_file = open(db_conf_file_name, "r")
     
     for line_cnt, line in enumerate(db_conf_file):
         entry = line.split('=')
-        run[entry[0].strip()] = entry[1].strip()                                       
+        map[entry[0].strip()] = entry[1].strip()                                       
     
 # Execute OLTP BENCH
 def execute_oltpbench(csv_file):
@@ -110,10 +112,14 @@ def execute_oltpbench(csv_file):
     parse_ob_summary(prefix, run);    
     #parse_db_conf(prefix, run);    
 
+    get_stats("ycsb", run) 
+
     # remove keys with no values
     run = dict((k, v) for k, v in run.iteritems() if v)
 
     cleanup(prefix)
+     
+    pprint.pprint(run) 
             
     wr = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
     wr.writerow(run.values())
@@ -138,8 +144,10 @@ if __name__ == '__main__':
     args = parser.parse_args()    
 
     csv_file = open("features.csv", 'wb')
-        
+             
     execute_oltpbench(csv_file)
 
     csv_file.close()
+    LOG.info("Done")
+
     
