@@ -10,14 +10,14 @@
     <isolation>TRANSACTION_READ_COMMITTED</isolation>
     
     <!-- Scale factor is the number of warehouses in TPCC -->
-    <scalefactor>1</scalefactor>
+    <scalefactor>0.001</scalefactor>
     
     <!-- The workload -->
     <terminals>2</terminals>
     <works>
         <work>
           <time>10</time>
-          <rate>10000</rate>
+          <rate>100</rate>
           <ratelimited bench="tpcc">true</ratelimited>
           <weights>45,43,4,4,4</weights>
         </work>

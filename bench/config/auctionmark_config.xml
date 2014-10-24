@@ -10,14 +10,14 @@
  <isolation>TRANSACTION_SERIALIZABLE</isolation>
     
     <!-- Scalefactor in AuctionMark scales by *1000 the number of customers-->
-    <scalefactor>10</scalefactor>
+    <scalefactor>0.01</scalefactor>
 
     <!-- The workload -->
     <terminals>10</terminals>
     <works>
         <work>
-          <time>300</time>
-          <rate>10000</rate>
+          <time>3</time>
+          <rate>1000</rate>
           <weights>45, 10, 20, 2, 1, 4, 10, 5, 3</weights>
         </work>
     </works>

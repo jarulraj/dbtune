@@ -13,13 +13,16 @@ import sys
 import re
 import fnmatch
 import string
+import random
 
 import numpy as np
 import csv
 from options import *
 from _rl_accel import fp_str
+from lxml import etree
 
 from postgres_driver import get_stats
+import numpy as np
 
 # # LOGGING CONFIGURATION
 LOG = logging.getLogger(__name__)
@@ -36,7 +39,16 @@ LOG.setLevel(logging.INFO)
 BASE_DIR = os.path.dirname(__file__)
 OLTP_BENCH_DIR = BASE_DIR + "./bench/oltpbench"
 OLTP_BENCH = "./oltpbenchmark"
+OUTPUT_FILE = "features.csv"
 
+NUM_TRAIN = 100
+#BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
+#WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9}
+BENCHMARKS = ['ycsb', 'tatp']
+WEIGHTS = {'ycsb': 6, 'tatp' : 7}
+
+# GLOBALS
+csv_file = open(OUTPUT_FILE, 'wb')
 
 # Parse SUMMARY
 def parse_ob_summary(output, map):
@@ -77,10 +89,11 @@ def parse_db_conf(output, map):
         entry = line.split('=')
         map[entry[0].strip()] = entry[1].strip()                                       
     
+       
 # Execute OLTP BENCH
-def execute_oltpbench(csv_file):
+def execute_oltpbench():
     LOG.info("Executing OLTP Bench")
-
+    
     def cleanup(prefix):
         files = glob.glob(prefix + "*")
         for f in files:
@@ -91,43 +104,71 @@ def execute_oltpbench(csv_file):
     log_file.write('Start :: %s \n' % datetime.datetime.now())
     log_file.flush()
 
+    # Go to config dir
     cwd = os.getcwd()
     os.chdir(OLTP_BENCH_DIR)
+ 
+    for run in range(0, NUM_TRAIN):
+ 
+        # Pick benchmark and generate config file
+        benchmark = random.choice(BENCHMARKS)
+        pprint.pprint("RUN " + str(run) + " :: " + str(benchmark))       
+         
+        ob_base_config_file = '../config/' + benchmark + '_config.xml'
+        ob_config_file = '../../features/config/test_' + str(run) + '_' + benchmark + '_config.xml' 
+    
+        tree = etree.parse(ob_base_config_file)
+        #tree.find('scalefactor').text = '0.23'
+        
+        weights = np.random.random(WEIGHTS[benchmark])
+        weights /= (weights.sum())
+        weights *= 100.0
+        weights_str = ','.join(map(str, weights.tolist()))
+                     
+        tree.find('works').find('work').find('weights').text = weights_str
+                 
+        out_file = open(ob_config_file, 'w')
+        tree.write(out_file)
+        out_file.close()
 
-    benchmark = 'tatp'
-    ob_config_file = '../config/' + benchmark + '_config.xml'
-    ob_create = 'true'
-    ob_load = 'true'
-    ob_execute = 'true'
-    ob_window = str(100)
-    prefix = 'output'
+        # Execute oltpbench        
+        ob_create = 'true'
+        ob_load = 'true'
+        ob_execute = 'true'
+        ob_window = str(100)
+        prefix = 'output'
+    
+        # ./oltpbenchmark -b ycsb -c ../config/ycsb_config.xml --create=true --load=true --execute=true -s 5 -o
+        subprocess.check_call([OLTP_BENCH, '-b', benchmark, '-c', ob_config_file, 
+                         '--create', ob_create, '--load', ob_load, '--execute', ob_execute, '-s', ob_window, '-o', prefix],
+                              stdout = log_file)
+    
+        run = {}  
+                      
+        # Get stats from OLTP Bench
+        parse_ob_summary(prefix, run);    
 
-    # EXECUTE OLTPBENCHMARK
-    # ./oltpbenchmark -b ycsb -c ../config/ycsb_config.xml --create=true --load=true --execute=true -s 5 -o
-    subprocess.check_call([OLTP_BENCH, '-b', benchmark, '-c', ob_config_file, 
-                     '--create', ob_create, '--load', ob_load, '--execute', ob_execute, '-s', ob_window, '-o', prefix],
-                          stdout = log_file)
+        # Get conf from OLTP Bench
+        #parse_db_conf(prefix, run);    
 
-    run = {}        
-    parse_ob_summary(prefix, run);    
-    #parse_db_conf(prefix, run);    
+        # Get stats from PG
+        get_stats(benchmark, run) 
+    
+        # Remove empty features
+        #run = dict((k, v) for k, v in run.iteritems() if v)
+                    
+        wr = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
+        wr.writerow(run.values())
 
-    get_stats(benchmark, run) 
-
-    # remove keys with no values
-    run = dict((k, v) for k, v in run.iteritems() if v)
-
-    cleanup(prefix)
-     
-    pprint.pprint(run) 
-            
-    wr = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
-    wr.writerow(run.values())
-            
+        # Cleanup output files
+        cleanup(prefix)         
+    
+    # Write out CSV file        
     log_file.flush()
     log_file.write('End :: %s \n' % datetime.datetime.now())
     log_file.close()
     
+    # Go back to orig dir
     os.chdir(cwd)
     
 
@@ -142,10 +183,8 @@ if __name__ == '__main__':
     parser.add_argument("-y", "--run-ycsb", help='run ycsb', action='store_true')
 
     args = parser.parse_args()    
-
-    csv_file = open("features.csv", 'wb')
              
-    execute_oltpbench(csv_file)
+    execute_oltpbench()
 
     csv_file.close()
     LOG.info("Done")
