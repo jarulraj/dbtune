@@ -1,53 +1,75 @@
 \section{Introduction} \label{sec:intro}
 
-Most conventional concurrency techniques are pessimistic -- they rely on some
-form of mutual exclusion to ensure isolation between concurrent
-transactions. Using locks, however, can impose significant overhead. Under some
-circumstances, better performance can be obtained with optimistic concurrency
-control (OCC), in which transactions execute speculatively, and are then
-verified before being allowed to commit.
+\subsubsection*{Milestones:} 
 
-One model for OCC is transactional memory (TM). Under the TM model, the
-programmer is presented with an abstraction in which a section of code can be
-marked as a transaction. All memory reads and writes within the transaction are
-optimistically executed, and some underlying layer of execution guarantees that
-the transaction is only allowed to commit if transactional semantics can be
-maintained. This allows read/write access to multiple memory words, while still
-maintaining isolation in a lock-free manner \citep{Herlihy93}.
+First, we plan to \textit{map} a given workload comprised of 
+SQL transactions to a standard database benchmark workload. This will 
+allow us to use prior knowledge about the standard benchmark gained from
+previous DBMS deployments. We plan to collect features like
+workload characteristics and DBMS performance metrics. 
+We may need to make use of a feature extraction algorithm like 
+\textit{principal component analysis} (PCA) as a preprocessing step.
+It will be interesting to see if feature extraction yields insights 
+about the most influential features.
+We will then
+use unsupervised techniques like \textit{clustering} for mapping workloads. 
+Performance analysis of the resulting classifier will be done via 
+cross-validation.
 
-TM can be realized either in hardware or in software. For instance, the
-load-linked/store-conditional primitive available in modern processors is a
-special case of hardware TM, where access is regulated for only a single memory
-word. Hardware implementations generally rely on extensions to the
-cache-coherence protocol, whereas software implementations provide transactional
-interfaces via basic hardware primitives like atomic compare-and-swap
-(CAS). These software-based approaches tend to introduce too much overhead to be
-competitive with lock-based solutions. Hardware approaches, on the other hand,
-can be implemented efficiently, making them very appealing in principle. Indeed,
-simulations have suggested that hardware transactional memory (HTM) can match or
-outperform pessimistic schemes. However, very few practical chips to date have
-supported HTM, which has led to a dearth of actual experiments confirming the
-utility of the method. In particular, there have been few published results on
-the impact of HTM on datastore systems, one of the primary motivations for
-transactional semantics.
+Second, we plan to \textit{estimate} the DBMS performance given the DBMS 
+configuration, workload and hardware setup. This will be done
+with supervised techniques like \textit{Gaussian process regression}. 
+As we expect a lot of features to be present in the input, we may 
+need to make use of a feature extraction algorithm like 
+principal component analysis (PCA) first. 
+Performance analysis of the estimator will be done using cross-validation.
 
-Recent Intel Haswell processors have brought transactional memory support to
-non-mainframe systems for the first time. The Haswell processors implement HTM
-in the form of instruction set extensions known as Transaction Synchronization
-Extensions (TSX). TSX supports two interfaces \citep{tsx-intro}: \\
+\subsubsection*{Dataset:} 
 
-\begin{itemize} 
-\item \textbf{Hardware Lock Elision (HLE):} \\ This is a backwards-compatible
-  extension which allows specifying transaction regions via \textrm{XACQUIRE}
-  and \textrm{XRELEASE} instruction prefixes. HLE is compatible with the
-  lock-based programming model. In HLE, when the transaction execution fails,
-  the TM implementation simply reverts to normal lock semantics during
-  re-execution. \\
-\item \textbf{Restricted Transactional Memory (RTM):} \\ This is a more flexible
-  extension, albeit not a backward compatible one, which allows specification of
-  transactions using \textrm{XBEGIN, XEND and XABORT} instructions. It allows
-  the programmer to specify the fallback path for transaction failures. \\
-\end{itemize}
+For the first part, we will use SQL workloads of standard benchmarks
+in OLTPBench\citep{oltpbench14}, a well-known testbed for benchmarking 
+relational databases, as training data. We plan to generate 
+more synthetic variants of these workloads for training and testing
+purposes. While this synthetic data will not be representative of 
+real-world workloads, we feel it is a good starting point for 
+evaluating viability of the approach outlined above.
+We anticipate some preprocessing steps in order to extract
+features from the workload such as types of database queries, 
+distribution of query types, table access patterns, etc. This will 
+involve making a fairly sophisticated workload analyzer. We will try 
+to hook this into an existing database to collect the features.
+For the second part, we plan to run different workloads in OLTPBench  
+on the DBMS under different configurations and obtain performance metrics. 
+This will provide both training and testing data.
+
+\subsubsection*{Timeline:} 
+We estimate that it will take 2 weeks for creating the workload analyzer
+that extracts the required features. Then, we will spend 2 weeks 
+solving the first problem as well as generating data for the second problem. 
+We plan to solve the first problem by the midway report deadline.
+After that, we plan to solve the second problem in another 2 weeks. 
+We reserve the final 2 weeks for wrapping up the project report and poster.
+
+\subsubsection*{Minimum goals:}
+The minimum goals are : (a) to create a workload mapper that maps an arbitrary 
+SQL workload to a well-known standard benchmark, and (b) to estimate the
+performance of a DBMS given a workload and configuration pair.
+
+\subsubsection*{Stretch goals:} 
+%We hope to expand our work along two directions. 
+As a real-world workload can exhibit some aspects of different standard 
+benchmarks or can exhibit different characteristics across time (e.g. read-mostly 
+during day and write-mostly during night), mapping the entire workload onto 
+a single benchmark may not be an entirely accurate characterization. 
+To help characterize the workload more accurately, we will consider mapping 
+parts of a workload onto different benchmarks using techniques like  
+\textit{multi-label prediction}. 
+
+% Can we skip this for now ?
+%Second, we can use \textit{Bayesian optimization} to find the 
+%optimal configuration that can deliver highest performance given 
+%information about the workload and hardware setup. We think that this is a 
+%hard problem since the state space is large.
 
 In this paper, we contribute a study of the effects of the Haswell HTM
 implementation (RTM, specifically) on synchronous access to in-memory data
