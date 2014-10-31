@@ -41,11 +41,11 @@ OLTP_BENCH_DIR = BASE_DIR + "./bench/oltpbench"
 OLTP_BENCH = "./oltpbenchmark"
 OUTPUT_FILE = "features.csv"
 
-NUM_TRAIN = 100
+NUM_TRAIN = 2
 #BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
 #WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9}
-BENCHMARKS = ['ycsb', 'tatp']
-WEIGHTS = {'ycsb': 6, 'tatp' : 7}
+BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
+WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9}
 
 # GLOBALS
 csv_file = open(OUTPUT_FILE, 'wb')
@@ -61,7 +61,8 @@ def parse_ob_summary(output, map):
         if line_cnt == 1:
             map['Database'] = line.strip()
         if line_cnt == 2:
-            map['Benchmark'] = line.strip()  
+            if 'Benchmark' not in map:
+                map['Benchmark'] = line.strip()  
         if line_cnt == 3:
             entry = line.split(',')
             for pair in entry:
@@ -89,6 +90,42 @@ def parse_db_conf(output, map):
         entry = line.split('=')
         map[entry[0].strip()] = entry[1].strip()                                       
     
+# Get weights
+
+def get_weights(benchmark, run):
+
+    if benchmark == 'ycsb':
+        ycsb_type = random.randint(1,4)
+        ycsb_perturb = random.uniform(0, 3)
+        
+        if ycsb_type == 1:
+            weights = [ 100.0, 0, 0, 0, 0, 0 ]
+            run['Benchmark'] = 'ycsb_read_only' 
+        elif ycsb_type == 2:
+            weights = [ 90.0, 10.0, 0, 0, 0, 0 ]
+            run['Benchmark'] = 'ycsb_read_heavy' 
+        elif ycsb_type == 3:
+            weights = [ 50.0, 50.0, 0, 0, 0, 0 ]
+            run['Benchmark'] = 'ycsb_balanced' 
+        elif ycsb_type == 4:
+            weights = [ 10.0, 90.0, 0, 0, 0, 0 ]            
+            run['Benchmark'] = 'ycsb_write_heavy' 
+
+        if ycsb_type != 1:         
+            weights[0] = min(100.0, weights[0] + ycsb_perturb)
+            weights[1] = max(0.0, weights[1] - ycsb_perturb)
+            
+        weights_str = ','.join(map(str, weights))    
+    else:
+        weights = np.random.random(WEIGHTS[benchmark])
+        weights /= (weights.sum())
+        weights *= 100.0
+        weights_str = ','.join(map(str, weights.tolist()))
+
+    pprint.pprint(benchmark);
+    pprint.pprint(weights_str);
+
+    return weights_str
        
 # Execute OLTP BENCH
 def execute_oltpbench():
@@ -108,23 +145,22 @@ def execute_oltpbench():
     cwd = os.getcwd()
     os.chdir(OLTP_BENCH_DIR)
  
-    for run in range(0, NUM_TRAIN):
+    for run_itr in range(0, NUM_TRAIN):
  
         # Pick benchmark and generate config file
         benchmark = random.choice(BENCHMARKS)
-        pprint.pprint("RUN " + str(run) + " :: " + str(benchmark))       
+        pprint.pprint("RUN " + str(run_itr) + " :: " + str(benchmark))       
          
         ob_base_config_file = '../config/' + benchmark + '_config.xml'
-        ob_config_file = '../../features/config/test_' + str(run) + '_' + benchmark + '_config.xml' 
+        ob_config_file = '../../features/config/test_' + str(run_itr) + '_' + benchmark + '_config.xml' 
     
         tree = etree.parse(ob_base_config_file)
         #tree.find('scalefactor').text = '0.23'
         
-        weights = np.random.random(WEIGHTS[benchmark])
-        weights /= (weights.sum())
-        weights *= 100.0
-        weights_str = ','.join(map(str, weights.tolist()))
-                     
+        run = {}  
+
+        weights_str = get_weights(benchmark, run);
+                             
         tree.find('works').find('work').find('weights').text = weights_str
                  
         out_file = open(ob_config_file, 'w')
@@ -142,9 +178,7 @@ def execute_oltpbench():
         subprocess.check_call([OLTP_BENCH, '-b', benchmark, '-c', ob_config_file, 
                          '--create', ob_create, '--load', ob_load, '--execute', ob_execute, '-s', ob_window, '-o', prefix],
                               stdout = log_file)
-    
-        run = {}  
-                      
+                          
         # Get stats from OLTP Bench
         parse_ob_summary(prefix, run);    
 
@@ -156,7 +190,7 @@ def execute_oltpbench():
     
         # Remove empty features
         #run = dict((k, v) for k, v in run.iteritems() if v)
-                    
+                        
         wr = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
         wr.writerow(run.values())
 

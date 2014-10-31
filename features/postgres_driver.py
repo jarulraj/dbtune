@@ -18,12 +18,18 @@ def fetch_pg_version(cur):
 def fetch_index_hits(cur):
     cur.execute("SELECT (sum(idx_blks_hit)) / (1 + sum(idx_blks_hit + idx_blks_read)) AS ratio FROM pg_statio_user_indexes")
     res = cur.fetchall()
-    return float(res[0][0])
+    ret = 0.0
+    if res[0][0] is not None:
+        ret = float(res[0][0])
+    return ret
 
 def fetch_cache_hits(cur):
     cur.execute("SELECT sum(heap_blks_hit) / (1 + sum(heap_blks_hit) + sum(heap_blks_read)) AS ratio FROM pg_statio_user_tables")
     res = cur.fetchall()
-    return float(res[0][0])
+    ret = 0.0
+    if res[0][0] is not None:
+        ret = float(res[0][0])
+    return ret
 
 def fetch_backend_states(cur, version):
     if version < (9,2):
