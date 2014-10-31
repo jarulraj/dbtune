@@ -24,7 +24,7 @@ bin/
 # maven output
 target
 
-*.csv
+#*.csv
 *.txt
 config*
 
