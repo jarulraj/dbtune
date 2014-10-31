@@ -44,8 +44,8 @@ OUTPUT_FILE = "features.csv"
 NUM_TRAIN = 100
 #BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
 #WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9}
-BENCHMARKS = ['ycsb', 'tatp']
-WEIGHTS = {'ycsb': 6, 'tatp' : 7}
+BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
+WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9}
 
 # GLOBALS
 csv_file = open(OUTPUT_FILE, 'wb')
@@ -96,19 +96,19 @@ def get_weights(benchmark, run):
 
     if benchmark == 'ycsb':
         ycsb_type = random.randint(1,4)
-        ycsb_perturb = random.uniform(0, 3)
+        ycsb_perturb = random.uniform(0, 5)
         
         if ycsb_type == 1:
             weights = [ 100.0, 0, 0, 0, 0, 0 ]
             run['Benchmark'] = 'ycsb_read_only' 
         elif ycsb_type == 2:
-            weights = [ 90.0, 10.0, 0, 0, 0, 0 ]
+            weights = [ 80.0, 20.0, 0, 0, 0, 0 ]
             run['Benchmark'] = 'ycsb_read_heavy' 
         elif ycsb_type == 3:
             weights = [ 50.0, 50.0, 0, 0, 0, 0 ]
             run['Benchmark'] = 'ycsb_balanced' 
         elif ycsb_type == 4:
-            weights = [ 10.0, 90.0, 0, 0, 0, 0 ]            
+            weights = [ 20.0, 80.0, 0, 0, 0, 0 ]            
             run['Benchmark'] = 'ycsb_write_heavy' 
 
         if ycsb_type != 1:         
