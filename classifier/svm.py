@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-clustering algorithms
+SVM
 ===================================
 """
 print(__doc__)
@@ -12,17 +12,13 @@ import csv
 
 import numpy as np
 
-import sklearn.cluster as cluster
+from sklearn import svm
 import sklearn.cross_validation as cross_validation
 from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
 import sklearn.cross_validation
 import sys
 import time
-
-# CONFIGURATION
-
-LABEL_FIELD = 9
 
 ##############################################################################
 # Constants
@@ -96,8 +92,8 @@ with open(sys.argv[1], "rb") as inputfile:
 
             converted_row = np.append(converted_row, [ converted_value ])
 
-        X = np.concatenate( (X, [ np.append(converted_row[:LABEL_FIELD], converted_row[LABEL_FIELD + 1:]) ]))
-        Y = np.append(Y, [ converted_row[LABEL_FIELD] ])
+        X = np.concatenate((X, [ converted_row[:num_features] ]))
+        y = np.append(y, [ converted_row[num_features] ])
 
 X = StandardScaler().fit_transform(X)
 
@@ -111,71 +107,7 @@ print("Detected " + str(num_labels) + " labels")
 print("")
 
 ##############################################################################
-# Create Classifiers
-
-classifiers = [("K-Means", cluster.KMeans(n_clusters = num_labels)),
-               ("Affinity Propogation", cluster.AffinityPropagation()),
-               ("Mean-Shift", cluster.MeanShift()),
-               ("Ward Agglomerative Clustering", cluster.AgglomerativeClustering(n_clusters = num_labels)),
-               ("DBSCAN", cluster.DBSCAN())]
-
-# ##############################################################################
-# Plot result
-import matplotlib
-matplotlib.use('TkAgg')
-
-import matplotlib.pyplot as plt
-
-plt.figure(figsize=(17, 9.5))
-plt.subplots_adjust(left=.001, right=.999, bottom=.001, top=.96, wspace=.05,
-                    hspace=.01)
-
-colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
-colors = np.hstack([colors] * 20)
-plot_num = 1
-for name, instance in classifiers:
-        # predict cluster memberships
-        t0 = time.time()
-        instance.fit(X)
-        t1 = time.time()
-        if hasattr(instance, 'labels_'):
-            y_pred = instance.labels_.astype(np.int)
-        else:
-            y_pred = instance.predict(X)
-
-        # Print statistics
-        labels = instance.labels_
-        n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
-        print('Metrics for %s' % (name))
-        print('-----------------------------------------------')
-        print('Estimated number of clusters: %d' % n_clusters_)
-        print("Homogeneity: %0.3f" % metrics.homogeneity_score(y, labels))
-        print("Completeness: %0.3f" % metrics.completeness_score(y, labels))
-        print("V-measure: %0.3f" % metrics.v_measure_score(y, labels))
-        print("Adjusted Rand Index: %0.3f"
-              % metrics.adjusted_rand_score(y, labels))
-        print("Adjusted Mutual Information: %0.3f"
-              % metrics.adjusted_mutual_info_score(y, labels))
-        print("Silhouette Coefficient: %0.3f"
-              % metrics.silhouette_score(X, labels))
-        print("")
-
-        # plot
-        plt.subplot(1, len(classifiers), plot_num)
-        plt.title(name, size = 18)
-        plt.scatter(X[:, 0], X[:, 1], color=colors[y_pred].tolist(), s=10)
-
-        if hasattr(instance, 'cluster_centers_'):
-            centers = instance.cluster_centers_
-            center_colors = colors[:len(centers)]
-            plt.scatter(centers[:, 0], centers[:, 1], s=100, c=center_colors)
-        plt.xlim(-2, 2)
-        plt.ylim(-2, 2)
-        plt.xticks(())
-        plt.yticks(())
-        plt.text(.99, .01, ('%.2fs' % (t1 - t0)).lstrip('0'),
-                 transform=plt.gca().transAxes, size=15,
-                 horizontalalignment='right')
-        plot_num += 1
-
-plt.show()
+# SVM
+clf = svm.NuSVC()
+scores = cross_validation.cross_val_score(clf, X, y, cv=5)
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
