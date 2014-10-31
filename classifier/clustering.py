@@ -97,7 +97,7 @@ with open(sys.argv[1], "rb") as inputfile:
             converted_row = np.append(converted_row, [ converted_value ])
 
         X = np.concatenate( (X, [ np.append(converted_row[:LABEL_FIELD], converted_row[LABEL_FIELD + 1:]) ]))
-        Y = np.append(Y, [ converted_row[LABEL_FIELD] ])
+        y = np.append(y, [ converted_row[LABEL_FIELD] ])
 
 X = StandardScaler().fit_transform(X)
 
