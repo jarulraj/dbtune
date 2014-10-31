@@ -1,0 +1,61 @@
+\section{Introduction} \label{sec:intro}
+
+Most conventional concurrency techniques are pessimistic -- they rely on some
+form of mutual exclusion to ensure isolation between concurrent
+transactions. Using locks, however, can impose significant overhead. Under some
+circumstances, better performance can be obtained with optimistic concurrency
+control (OCC), in which transactions execute speculatively, and are then
+verified before being allowed to commit.
+
+One model for OCC is transactional memory (TM). Under the TM model, the
+programmer is presented with an abstraction in which a section of code can be
+marked as a transaction. All memory reads and writes within the transaction are
+optimistically executed, and some underlying layer of execution guarantees that
+the transaction is only allowed to commit if transactional semantics can be
+maintained. This allows read/write access to multiple memory words, while still
+maintaining isolation in a lock-free manner \citep{Herlihy93}.
+
+TM can be realized either in hardware or in software. For instance, the
+load-linked/store-conditional primitive available in modern processors is a
+special case of hardware TM, where access is regulated for only a single memory
+word. Hardware implementations generally rely on extensions to the
+cache-coherence protocol, whereas software implementations provide transactional
+interfaces via basic hardware primitives like atomic compare-and-swap
+(CAS). These software-based approaches tend to introduce too much overhead to be
+competitive with lock-based solutions. Hardware approaches, on the other hand,
+can be implemented efficiently, making them very appealing in principle. Indeed,
+simulations have suggested that hardware transactional memory (HTM) can match or
+outperform pessimistic schemes. However, very few practical chips to date have
+supported HTM, which has led to a dearth of actual experiments confirming the
+utility of the method. In particular, there have been few published results on
+the impact of HTM on datastore systems, one of the primary motivations for
+transactional semantics.
+
+Recent Intel Haswell processors have brought transactional memory support to
+non-mainframe systems for the first time. The Haswell processors implement HTM
+in the form of instruction set extensions known as Transaction Synchronization
+Extensions (TSX). TSX supports two interfaces \citep{tsx-intro}: \\
+
+\begin{itemize} 
+\item \textbf{Hardware Lock Elision (HLE):} \\ This is a backwards-compatible
+  extension which allows specifying transaction regions via \textrm{XACQUIRE}
+  and \textrm{XRELEASE} instruction prefixes. HLE is compatible with the
+  lock-based programming model. In HLE, when the transaction execution fails,
+  the TM implementation simply reverts to normal lock semantics during
+  re-execution. \\
+\item \textbf{Restricted Transactional Memory (RTM):} \\ This is a more flexible
+  extension, albeit not a backward compatible one, which allows specification of
+  transactions using \textrm{XBEGIN, XEND and XABORT} instructions. It allows
+  the programmer to specify the fallback path for transaction failures. \\
+\end{itemize}
+
+In this paper, we contribute a study of the effects of the Haswell HTM
+implementation (RTM, specifically) on synchronous access to in-memory data
+structures. Specifically, we focus on \textit{multi-key transactions} on a
+\textit{key-value store}, comparing the performance of an HTM concurrency
+control with pessimistic alternatives. In \Cref{sec:tm}, we describe the problem
+of synchronizing multi-key transactions on a key-value store using hardware TM
+support, and related work to date on this problem. We then present the
+traditional pessimistic concurrency control protocols we use for comparison in
+\Cref{sec:pessimistic}. We define the goals of this project, our progress so
+far, and our plan to accomplish the remaining workload in \Cref{sec:plan}. Finally, we sketch our evaluation plan \Cref{sec:eval}.

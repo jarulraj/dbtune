@@ -1,0 +1,58 @@
+\section{Concurrency Control in Key-Value Stores} \label{sec:tm}
+
+The literature on practical tests of HTM is very limited. Key-value stores
+present an appealing test case for the technology as a concurrency control (CC)
+mechanism.
+
+\subsection{Key-Value Store}
+
+A key-value store presents an associative data access interface that maps a set
+of keys $K$ to a set of values $V$, where the keys and values can be arbitrary
+objects. The keys are generally prehashed to obtain an uniform distribution. The
+values can be stored separately and fixed-length pointers can be used to
+represent them in the key-value store implementation.  
+
+The main operations provided in the key-value store's interface are
+\textsc{GET}(key), \textsc{PUT}(key,value), and \textsc{DELETE}(key). Readers
+can conflict with writers and writers can conflict with other writers. Thus, a
+concurrency control mechanism is required to provide isolation between
+conflicting accesses. Furthermore, clients of the key-value store often require
+that reads/writes to more than one entry in the store appear
+atomic. Synchronizing this type of transaction -- a \textit{multi-key
+transaction} -- is the focus of this project.
+
+\subsection{Optimistic Concurrency Control in Haswell}
+
+A simple mechanism that can be used to provide isolation is coarse-grained
+locks. This allows at least a limited amount of safe concurrency.  However,
+this is a pessimistic concurrency control protocol that targets high-contention
+workloads. Read accesses also need to incur the locking overhead in this scheme.
+
+For low contention workloads like read-dominant workloads, an optimistic
+concurrency control scheme generally provides better performance, as the
+validation is postponed to the end of the transaction. The concurrency control
+protocol is essentially not exposed to the user, which allows non-conflicting
+accesses to avoid the locking overhead.  Optimistic concurrency control
+mechanisms still rely on locking, but they move this functionality to the
+language runtime layer in the case of software transactional memory schemes
+(STM) or to the hardware layer in the case of hardware transaction memory
+schemes (HTM). The programmer is presented only the higher-level abstraction of
+transactions. We focus on HTM in this project.
+
+HTM simplifies concurrent programming by providing support for atomic execution
+of a set of load and store instructions by using transactional caches. Intel TSX
+provides an HTM implementation. It allows non-conflicting transactions to elide
+locks entirely, serializing only conflicting transactions.
+
+Conflict resolution mechanism is flexible in the RTM interface. The programmer
+can define the fallback mechanism to resolve conflicts. For instance, a group
+sum operation using RTM interface in Intel Haswell is shown in \Cref{fig:rtm}.
+In contrast, the HLE interface relies on the processor to handle conflicts -- a
+more conservative policy. We plan to evaluate both interfaces in our project.
+
+\lstset{basicstyle=\ttfamily\fontsize{9}{10}\selectfont,
+morekeywords={if,else,end}, numbers=left} \begin{figure}
+    \parbox[t]{0.45\textwidth}{\lstinputlisting{figure/rtm.c}} \caption{Group
+        sum operation using RTM interface. A mutex is obtained in fallback path
+to avoid data race with the normal transaction execution path.} \label{fig:rtm}
+\end{figure}

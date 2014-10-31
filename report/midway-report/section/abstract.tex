@@ -1,0 +1,15 @@
+
+\begin{abstract} 
+Hardware support for transactional memory in the form of
+transaction synchronization instruction set extensions has been introduced in
+recent Intel processors \citep{tsx-intro}. These extensions provide two software
+interfaces to define transaction regions: a flexible interface which allows the programmer
+to specify a fallback path to handle transaction failures (Restricted
+Transactional Memory) and another backward compatible interface that is less
+customisable (Hardware Lock Elision). We plan to apply these hardware
+primitives for concurrency control among transactions that operate on
+multiple-keys in a key-value store.  The read and write sets of these
+transactions are initially assumed to be static. The performance of these hardware
+primitives will be compared against traditional pessimistic concurrency control
+schemes. We plan to handle dynamic read and write sets as our stretch goal.   
+\end{abstract}
