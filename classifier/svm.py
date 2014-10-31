@@ -20,6 +20,10 @@ import sklearn.cross_validation
 import sys
 import time
 
+# CONFIGURATION
+
+LABEL_FIELD = 9
+
 ##############################################################################
 # Constants
 NUM_FOLDS = 5
@@ -92,8 +96,8 @@ with open(sys.argv[1], "rb") as inputfile:
 
             converted_row = np.append(converted_row, [ converted_value ])
 
-        X = np.concatenate((X, [ converted_row[:num_features] ]))
-        y = np.append(y, [ converted_row[num_features] ])
+        X = np.concatenate( (X, [ np.append(converted_row[:LABEL_FIELD], converted_row[LABEL_FIELD + 1:]) ]))
+        y = np.append(y, [ converted_row[LABEL_FIELD] ])
 
 X = StandardScaler().fit_transform(X)
 
