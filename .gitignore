@@ -57,3 +57,5 @@ config*
 *.synctex.gz
 *.scons*
 *.fls
+
+bench/oltpbench
