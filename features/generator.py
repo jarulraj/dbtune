@@ -41,11 +41,11 @@ OLTP_BENCH_DIR = BASE_DIR + "./bench/oltpbench"
 OLTP_BENCH = "./oltpbenchmark"
 OUTPUT_FILE = "features.csv"
 
-NUM_TRAIN = 2
+NUM_TRAIN = 100
 #BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
 #WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9}
-BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
-WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9}
+BENCHMARKS = ['ycsb', 'tatp']
+WEIGHTS = {'ycsb': 6, 'tatp' : 7}
 
 # GLOBALS
 csv_file = open(OUTPUT_FILE, 'wb')
