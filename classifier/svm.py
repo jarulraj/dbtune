@@ -79,20 +79,26 @@ with open(sys.argv[1], "rb") as inputfile:
                         text_feature_map[column] = {}
                         next_text_feature_number[column] = 0
                     else:
-                        sys.exit("Encountered text feature \"" +
-                                 entry +
-                                 "\" in row " +
-                                 str(i + 1) +
-                                 " for numerical column " +
-                                 str(column) +
-                                 "!")
+                        if entry == "None":
+                            converted_value = 0
+                        else:
+                            sys.exit("Encountered text feature \"" +
+                                     entry +
+                                     "\" in row " +
+                                     str(i + 1) +
+                                     " for numerical column " +
+                                     str(column) +
+                                     "!")
 
-                if entry in text_feature_map[column]:
-                    converted_value = text_feature_map[column][entry]
-                else:
-                    text_feature_map[column][entry] = next_text_feature_number[column]
-                    converted_value = next_text_feature_number[column]
-                    next_text_feature_number[column] += 1
+                if converted_value is None:
+                    if entry in text_feature_map[column]:
+                        converted_value = text_feature_map[column][entry]
+                    else:
+                        text_feature_map[column][entry] = next_text_feature_number[column]
+                        converted_value = next_text_feature_number[column]
+                        if column == LABEL_FIELD:
+                            print ("%s --> %d" % (entry, next_text_feature_number[column]))
+                        next_text_feature_number[column] += 1
 
             converted_row = np.append(converted_row, [ converted_value ])
 
@@ -112,6 +118,11 @@ print("")
 
 ##############################################################################
 # SVM
-clf = svm.NuSVC()
-scores = cross_validation.cross_val_score(clf, X, y, cv=5)
+clf = svm.SVC()
+scores = cross_validation.cross_val_score(clf, X, y, cv=2, scoring='precision')
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+num_samples = len(X) / 2
+clf.fit(X[num_samples:, :], y[num_samples:])
+predictions = clf.predict(X[:num_samples, :])
+print(metrics.classification_report(y[:num_samples], predictions))
