@@ -41,7 +41,7 @@ OLTP_BENCH_DIR = BASE_DIR + "./bench/oltpbench"
 OLTP_BENCH = "./oltpbenchmark"
 OUTPUT_FILE = "features.csv"
 
-NUM_TRAIN = 100
+NUM_TRAIN = 10
 #BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
 #WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9}
 BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
@@ -98,18 +98,18 @@ def get_weights(benchmark, run):
         ycsb_type = random.randint(1,4)
         ycsb_perturb = random.uniform(0, 5)
         
-        if ycsb_type == 1:
-            weights = [ 100.0, 0, 0, 0, 0, 0 ]
-            run['Benchmark'] = 'ycsb_read_only' 
-        elif ycsb_type == 2:
-            weights = [ 80.0, 20.0, 0, 0, 0, 0 ]
-            run['Benchmark'] = 'ycsb_read_heavy' 
-        elif ycsb_type == 3:
-            weights = [ 50.0, 50.0, 0, 0, 0, 0 ]
-            run['Benchmark'] = 'ycsb_balanced' 
-        elif ycsb_type == 4:
-            weights = [ 20.0, 80.0, 0, 0, 0, 0 ]            
-            run['Benchmark'] = 'ycsb_write_heavy' 
+        #if ycsb_type == 1:
+        weights = [ 0, 100, 0, 0, 0, 0 ]
+        #    run['Benchmark'] = 'ycsb_read_only' 
+        #elif ycsb_type == 2:
+        #    weights = [ 80.0, 20.0, 0, 0, 0, 0 ]
+        #    run['Benchmark'] = 'ycsb_read_heavy' 
+        #elif ycsb_type == 3:
+        #    weights = [ 50.0, 50.0, 0, 0, 0, 0 ]
+        #    run['Benchmark'] = 'ycsb_balanced' 
+        #elif ycsb_type == 4:
+        #    weights = [ 20.0, 80.0, 0, 0, 0, 0 ]            
+        #    run['Benchmark'] = 'ycsb_write_heavy' 
 
         if ycsb_type != 1:         
             weights[0] = min(100.0, weights[0] + ycsb_perturb)
