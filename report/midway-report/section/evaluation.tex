@@ -1,7 +1,7 @@
 \section{Evaluation Plan} \label{sec:eval}
 
 To evaluate our algorithms, we decided to use the ``scikit-learn''
-\ref{scikit-learn} package for Python. In exploring the best way to
+\citep{scikit-learn} package for Python. In exploring the best way to
 map workloads onto benchmarks, we evaluated both clustering algorithms
 as well as SVM. The rest of this section discusses the results we
 observed with each method.
@@ -27,18 +27,20 @@ all of which are inbuilt in scikit-learn:
 
 \begin{figure}[p]
     \centering
-    \begin{tabular}
+    \begin{tabular}{c c c c}
       \toprule
-      Metric       & K-Means & Affinity-Propagation & Mean-Shift & Ward Agglomerative Clustering & DBSCAN \\
+      Algorithm                     & Homogeneity & Completeness & V-Measure \\
       \midrule
-      Homogeneity  & 1.000   & 0.824                & 1.000      & 1.000                         & 0.000  \\
-      Completeness & 1.000   & 1.000                & 0.795      & 1.000                         & 1.000  \\
-      V-Measure    & 1.000   & 0.904                & 0.886      & 1.000                         & 0.000  \\
+      K-Means                       & 1.000       & 1.000        & 1.000     \\
+      Affinity-Propagation          & 0.824       & 1.000        & 0.904     \\
+      Mean-Shift                    & 1.000       & 0.795        & 0.886     \\
+      Ward Agglomerative Clustering & 1.000       & 1.000        & 1.000     \\
+      DBSCAN                        & 0.000       & 1.000        & 0.000     \\
       \bottomrule
     \end{tabular}
 
-    \caption{Clusters Found by the Clustering Algorithms}
-    \label{fig:clusters}
+    \caption{Clustering Algorithm Performance Metrics}
+    \label{fig:clustering-metrics}
 \end{figure}
 
 The clusters found by each algorithm can be seen in
