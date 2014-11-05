@@ -28,7 +28,7 @@
 
 % standard packages that must be loaded after hyperref
 \usepackage{bookmark}
-\usepackage{verbatim} 
+\usepackage{verbatim}
 
 % should be loaded after listings and subfig
 \usepackage{cleveref}
@@ -36,7 +36,8 @@
 \usepackage{xfrac}
 
 % custom packages for this paper
- 
+\usepackage{xcolor}
+
 %\DeclareCaptionType{copyrightbox}
 
 \renewcommand{\cite}[1]{%
@@ -99,7 +100,7 @@
 \begin{document}
 
 \title{
-  \textsc{\LARGE Midway Report\\  
+  \textsc{\LARGE Midway Report\\
   \Large Automatic Tuning of DBMS using Machine Learning\\
   \large CMU 10-701: Machine Learning (Fall 2014)}
 }
@@ -112,6 +113,9 @@
 
 \input{section/abstract}
 \input{section/introduction}
+\input{section/motivation}
+\input{section/data_set}
+\input{section/evaluation}
 %\input{section/tm}
 %\input{section/pessimistic}
 %\input{section/plan}

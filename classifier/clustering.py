@@ -122,11 +122,9 @@ classifiers = [("K-Means", cluster.KMeans(n_clusters = num_labels)),
 # ##############################################################################
 # Plot result
 import matplotlib
-matplotlib.use('TkAgg')
-
 import matplotlib.pyplot as plt
 
-plt.figure(figsize=(17, 9.5))
+plt.figure(figsize=(20, 6.5))
 plt.subplots_adjust(left=.001, right=.999, bottom=.001, top=.96, wspace=.05,
                     hspace=.01)
 
@@ -178,4 +176,4 @@ for name, instance in classifiers:
                  horizontalalignment='right')
         plot_num += 1
 
-plt.show()
+plt.savefig('clustering.eps', format='eps', dpi=1000)
