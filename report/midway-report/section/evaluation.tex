@@ -1,28 +1,10 @@
 \section{Evaluation} \label{sec:eval}
 
-We use the ``scikit-learn'' \citep{scikit-learn} package for Python.
-for our machine learning algorithms. 
+We use the ``scikit-learn'' \citep{scikit-learn} package for Python
+as our framework for evaluating different machine learning algorithms. 
 In exploring the best way to map workloads onto benchmarks, we evaluated both
 clustering algorithms as well as SVM. The rest of this section discusses the results we
 observed with each method.
-
-\begin{figure*}[h]
-    \centering
-    \begin{tabular}{c c c c}
-      \toprule
-      Algorithm                     & Homogeneity & Completeness & V-Measure \\
-      \midrule
-      K-Means                       & 1.000       & 1.000        & 1.000     \\
-      Affinity-Propagation          & 0.824       & 1.000        & 0.904     \\
-      Mean-Shift                    & 1.000       & 0.795        & 0.886     \\
-      Ward Agglomerative Clustering & 1.000       & 1.000        & 1.000     \\
-      DBSCAN                        & 0.000       & 1.000        & 0.000     \\
-      \bottomrule
-    \end{tabular}
-
-    \caption{Clustering Algorithm Performance Metrics}
-    \label{fig:clustering-metrics}
-\end{figure*}
 
 Clustering was our first approach as an unsupervised algorithm seemed
 to best fit the data at hand. As such, we tried the following methods,
@@ -37,9 +19,9 @@ all of which are inbuilt in scikit-learn:\\
 \end{itemize}
 
 The clusters found by each algorithm can be seen in
-\ref{fig:clusters}. We also calculated common clustering metrics such
+\cref{fig:clusters}. We also calculated common clustering metrics such
 as homogeneity, completeness, and V-measure. These results can be
-found in \ref{fig:clustering-metrics}. From the results, we notice
+found in \cref{fig:clustering-metrics}. From the results, we notice
 immediately that DBSCAN does not work well with our data. Indeed, it
 does not find any distinct clusters at all. However, K-Means and Ward
 Agglomerative Clustering algorithms perform well. 

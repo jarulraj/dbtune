@@ -53,17 +53,18 @@ that we use for generating the dataset are presented in \cref{tab:benchmarks}.
    Txn. & \# of & Application  & Attributes  \\
    & & & Keys & & Keys & Types & Joins  & domain & \\
    \midrule
-	AuctionMark 	& 16 	& 125  &	16 &	14 &	41 &	10 &	10 &	Online Auctions &
+	AuctionMark 	& 16 	& 125  &	16 &	14 &	41 &	10 &	10 &	Online &
 	Non-deterministic\\
-	& & & & & & & & &  heavy transactions \\
+	& & & & & & & & Auctions &  heavy transactions \\
 	%Epinions 	5 	21 	2 	10 	0 	9 	3 	Social Networking 	Joins over many-to-many%relationships 
 	%JPAB 	7 	68 	6 	5 	3 	4 	N/A 	Object-Relational Mapping 	Bursts of random%reads, pointer chasing 
 	%ResourceStresser 	4 	23 	4 	0 	0 	6 	2 	Isolated Resource Stresser 	CPU-,disk-, lock-heavy transactions 
-	SEATS &	10 &	189 &	9 	& 5 	& 12 	& 6 &	6 &	On-line Airline Ticketing &
+	SEATS &	10 &	189 &	9 	& 5 	& 12 	& 6 &	6 &	On-line Airline  &
 	Secondary indices queries\\
-	& & & & & & & & & foreign-key joins \\
-	TATP &	4 	& 51 &	4 &	5 &	3 &	7 &	1 &	Caller Location App &	Short, read-mostly\\
-	& & & & & & & & & non-conflicting transactions\\
+	& & & & & & & & Ticketing & foreign-key joins \\
+	TATP &	4 	& 51 &	4 &	5 &	3 &	7 &	1 &	Caller Location  &	Short, read-mostly\\
+	& & & & & & & & App & non-conflicting\\
+	& & & & & & & & &  transactions\\
 	TPC-C &	9 &	92 &	8 &	3 &	24 &	5 &	2 &	Order Processing & Write-heavy
 	transactions\\
 	Twitter &	5 &	18 &	5 &	4 &	0 &	5 &	0 &	Social Networking & Client-side joins \\

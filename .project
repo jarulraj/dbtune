@@ -15,4 +15,16 @@
 		<nature>net.sourceforge.texlipse.builder.TexlipseNature</nature>
 		<nature>org.python.pydev.pythonNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>report/midway-report/fleqn.clo</name>
+			<type>1</type>
+			<location>/usr/share/texlive/texmf-dist/tex/latex/base/fleqn.clo</location>
+		</link>
+		<link>
+			<name>report/midway-report/leqno.clo</name>
+			<type>1</type>
+			<location>/usr/share/texlive/texmf-dist/tex/latex/base/leqno.clo</location>
+		</link>
+	</linkedResources>
 </projectDescription>

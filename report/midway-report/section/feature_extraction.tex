@@ -1,10 +1,10 @@
 \section{Feature Extraction} \label{sec:features}
 
-We collect features from both the DBMS as well as the benchmarking framework. 
-There are 3 types of features :\\
+We collect 3 types of features from both the DBMS as well as the benchmarking
+framework.
 
-\begin{enumerate}
-  \item{\textbf{Features from OLTP-Bench :}\\
+\subsection{Features from OLTP-Bench }
+
   After executing the benchmark, we obtain statistics about the latency and
   throughput delivered by the DBMS.
   This includes both temporal performance metrics as well as aggregate metrics. 
@@ -20,9 +20,9 @@ There are 3 types of features :\\
   we anticipate this tool to be useful for other DBMSs as well.   
   We also record the expected label i.e. the benchmark name. This is used for
   evaluating the accuracy of our classification algorithms.  
-  }
   
-  \item {\textbf{Static parameters from Postgres :}\\
+\subsection{Static parameters from Postgres}
+
   Static parameters are features that do not vary over every execution. This
   primarily includes the configuration parameters of the DBMS and the hardware
   setup.
@@ -48,9 +48,9 @@ There are 3 types of features :\\
   non-expert user might not be able to configure these parameters to obtain
   good performance. Our tuning tool can help such users by automatically
   identifying a good DBMS configuration for a given workload.  
-  }
   
-  \item {\textbf{Dynamic parameters from Postgres :}\\
+\subsection{Dynamic parameters from Postgres}
+  
   We also collect dynamic parameters from the DBMS during feature extraction.
   To do this, we implemented a Postgres driver that queries the DBMS's internal
   catalog tables like pg\_stat\_database, pg\_statio\_user\_indexes,
@@ -76,14 +76,31 @@ There are 3 types of features :\\
   	We normalize the relevant metrics by the number of transactions executed.
   	Before the start of an execution, we reset all the statistics using our
   	DBMS driver. Overall, this gives us a nice set of features about the
-  	workload. }
-\end{enumerate}
+  	workload. 
 
 \begin{figure*}
     \centering
-    \includegraphics[width=0.8\textwidth]{clustering.eps}
-    \caption{Clusters Found by the Clustering Algorithms}
+    \includegraphics[width=0.95\textwidth]{figure/clustering.eps}
+    \caption{Clusters found by the clustering algorithms.}
     \label{fig:clusters}
+\end{figure*}
+
+\begin{figure*}[h]
+    \centering
+    \begin{tabular}{c c c c}
+      \toprule
+      Algorithm                     & Homogeneity & Completeness & V-Measure \\
+      \midrule
+      K-Means                       & 1.000       & 1.000        & 1.000     \\
+      Affinity-Propagation          & 0.824       & 1.000        & 0.904     \\
+      Mean-Shift                    & 1.000       & 0.795        & 0.886     \\
+      Ward Agglomerative Clustering & 1.000       & 1.000        & 1.000     \\
+      DBSCAN                        & 0.000       & 1.000        & 0.000     \\
+      \bottomrule
+    \end{tabular}
+
+    \caption{Performance metrics of clustering algorithms.}
+    \label{fig:clustering-metrics}
 \end{figure*}
 
 After collecting all these features, we transform them to a metric space and
