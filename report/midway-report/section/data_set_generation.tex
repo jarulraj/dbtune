@@ -1,0 +1,70 @@
+\section{Data Set} \label{sec:data_set}
+
+The dataset required for this project would ideally comprise of a 
+collection of real world SQL workloads, DBMS configurations and performance
+metrics. Collecting and curating such a dataset is itself an interesting
+problem.
+However, in this project, we first want to experiment with a smaller dataset
+to better understand the features relevant for our learning problem.
+Therefore, we chose to generate the dataset using
+OLTP-Bench~\citep{oltpbench14}, an extensible DBMS benchmarking framework.
+
+The key reasons for why we use this framework to generate the dataset 
+are the following:
+
+\begin{itemize}
+  \item It supports several relational DBMSs through the JDBC interface. This
+  includes Postgres, MySQL, and Oracle.
+  \item It allows us to control the workload mixture in a benchmark. For
+  instance, we can adjust the percent of read and update transactions in 
+  the YCSB benchmark to genreate different variants of the workload.
+  \item It supports user-defined configuration of the rate at which the
+  transaction requests are submitted to the DBMS. This allows us to emulate
+  different world workloads with varying degrees of concurrency.
+  \item The framework exposes statistics that are complementary to the 
+  internal statistics of the DBMS. We extract features from these statistics. 
+\end{itemize}
+
+We implemented a dataset generator that runs different benchmarks supported
+by OLTP-Bench on a Postgres DBMS. After every workload execution, we
+collect statistics from the DBMS as well as from the testbed. We alter the
+workload mixture in all the benchmarks to generate different variants and
+emulate real world workloads. The key characteristics of the benchmarks
+that we use for generating the dataset are presented in \cref{tab:benchmarks}.
+
+\begin{table*}
+\centering
+\small{
+  \centering
+  \begin{tabular}{lllll lllll} \toprule
+   Workloads & Tables & Columns & Pr. & Indexes &	Fr. & 
+   Txn. & \# of & Application  & Attributes  \\
+   & & & Keys & & Keys & Types & Joins  & domain & \\
+   \midrule
+	AuctionMark 	& 16 	& 125  &	16 &	14 &	41 &	10 &	10 &	Online Auctions &
+	Non-deterministic\\
+	& & & & & & & & &  heavy transactions \\
+	%Epinions 	5 	21 	2 	10 	0 	9 	3 	Social Networking 	Joins over many-to-many%relationships 
+	%JPAB 	7 	68 	6 	5 	3 	4 	N/A 	Object-Relational Mapping 	Bursts of random%reads, pointer chasing 
+	%ResourceStresser 	4 	23 	4 	0 	0 	6 	2 	Isolated Resource Stresser 	CPU-,disk-, lock-heavy transactions 
+	SEATS &	10 &	189 &	9 	& 5 	& 12 	& 6 &	6 &	On-line Airline Ticketing &
+	Secondary indices queries\\
+	& & & & & & & & & foreign-key joins \\
+	TATP &	4 	& 51 &	4 &	5 &	3 &	7 &	1 &	Caller Location App &	Short, read-mostly\\
+	& & & & & & & & & non-conflicting transactions\\
+	TPC-C &	9 &	92 &	8 &	3 &	24 &	5 &	2 &	Order Processing\\
+	& & & & & & & & & Write-heavy transactions \\
+	Twitter &	5 &	18 &	5 &	4 &	0 &	5 &	0 &	Social Networking & Client-side joins \\
+	& & & & & & & & & on	graph data \\
+	%Wikipedia 	12 	122 	12 	40 	0 	5 	2 	On-line Encyclopedia 	Complex trans,
+	% large data, skew 
+	YCSB &	1 &	11 &	1 &	0 &	0 &	6 &	0 &	Scalable NoSQL store &	Key-value queries \\
+   \bottomrule
+   \end{tabular}
+ }
+\caption{Key characteristics of the benchmarks used in our evaluation. ``Pr. key''
+denotes primary key and ``Fr. key'' denotes foreign key.}
+\label{tab:benchmarks}
+\end{table*}
+
+
