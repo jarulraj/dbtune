@@ -8,6 +8,17 @@ However, in this project, we first want to experiment with a smaller dataset
 to better understand the features relevant for our learning problem.
 Therefore, we chose to generate the dataset using
 OLTP-Bench~\citep{oltpbench14}, an extensible DBMS benchmarking framework.
+We use the SQL workloads of standard benchmarks already available
+in OLTPBench. 
+
+We generate more synthetic variants of these workloads for training and
+testing purposes. As we mentioned earlier, while this synthetic data will not be
+representative of real-world workloads, we feel it is a good starting point for
+evaluating viability of the approach outlined above.
+We extract several features from the workload such as types of database queries,
+distribution of query types, table access patterns, etc. using 
+a workload analyzer. We hook this analyzer into Postgres to collect 
+features from the DBMS.
 
 The key reasons for why we use this framework to generate the dataset 
 are the following:
