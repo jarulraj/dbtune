@@ -1,9 +1,9 @@
 \section{Introduction} \label{sec:intro}
 
-\subsubsection*{Updated Questions:}
 
-We address these two questions in this project :
+\subsection{Questions}
 
+We address these two questions in this project.
 First, we plan to \textit{map} a given workload comprised of
 a set of SQL transactions to a standard database benchmark workload. 
 This problem is independent of the underlying DBMS or hardware configuration.
@@ -28,19 +28,19 @@ need to make use of a feature extraction algorithm like
 principal component analysis (PCA) first.
 Performance analysis of the estimator will also be done using 
 cross-validation.
-
 We describe our progress on solving the first problem in this report.
 
-\subsubsection*{Minimum goals:}
+\subsection{Minimum goals}
 The minimum goals are : (a) to create a workload mapper that maps an arbitrary
 SQL workload to a well-known standard benchmark, and (b) to estimate the
 performance of a DBMS given a workload and configuration pair.
 
-We have already achieved the first goal on our synthetic dataset. We plan to
-generalize it to more sophisticated datasets as our strect goal. 
-We have also setup the infrastructure to reach the second goal.
+We have already achieved the first goal on our dataset. We plan to
+generalize it to more sophisticated datasets as our stretch goal. 
+We have also setup the infrastructure required 
+for achieving the second goal.
 
-\subsubsection*{Stretch goals:}
+\subsection{Stretch goals}
 As a real-world workload can exhibit some aspects of different standard
 benchmarks or can exhibit different characteristics across time (e.g. read-mostly
 during day and write-mostly during night), mapping the entire workload onto
@@ -58,4 +58,4 @@ parts of a workload onto different benchmarks using techniques like
 In this report, we first describe how we generate the dataset in
 \cref{sec:data_set}. We then focus on the feature extraction problem
 in \cref{sec:features}.
-Finally, we sketch our initial evaluation results in\cref{sec:eval}.
+Finally, we sketch our initial evaluation results in \cref{sec:eval}.

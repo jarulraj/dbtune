@@ -17,23 +17,24 @@ representative of real-world workloads, we feel it is a good starting point for
 evaluating viability of the approach outlined above.
 We extract several features from the workload such as types of database queries,
 distribution of query types, table access patterns, etc. using 
-a workload analyzer. We hook this analyzer into Postgres to collect 
+a workload analyzer. We hook this analyzer into Postgres~\citep{postgres91} to collect 
 features from the DBMS.
 
 The key reasons for why we use this framework to generate the dataset 
 are the following:
 
 \begin{itemize}
-  \item It supports several relational DBMSs through the JDBC interface. This
-  includes Postgres, MySQL, and Oracle.
+  \item It supports several relational DBMSs through the JDBC interface
+  including Postgres, MySQL, and Oracle.
   \item It allows us to control the workload mixture in a benchmark. For
   instance, we can adjust the percent of read and update transactions in 
-  the YCSB benchmark to genreate different variants of the workload.
+  the YCSB~\citep{ycsb} benchmark to generate different variants of the workload.
   \item It supports user-defined configuration of the rate at which the
   transaction requests are submitted to the DBMS. This allows us to emulate
   different world workloads with varying degrees of concurrency.
   \item The framework exposes statistics that are complementary to the 
-  internal statistics of the DBMS. We extract features from these statistics. 
+  internal statistics of the DBMS~\citep{postgres14}. We extract features from
+  these statistics.
 \end{itemize}
 
 We implemented a dataset generator that runs different benchmarks supported
@@ -63,8 +64,8 @@ that we use for generating the dataset are presented in \cref{tab:benchmarks}.
 	& & & & & & & & & foreign-key joins \\
 	TATP &	4 	& 51 &	4 &	5 &	3 &	7 &	1 &	Caller Location App &	Short, read-mostly\\
 	& & & & & & & & & non-conflicting transactions\\
-	TPC-C &	9 &	92 &	8 &	3 &	24 &	5 &	2 &	Order Processing\\
-	& & & & & & & & & Write-heavy transactions \\
+	TPC-C &	9 &	92 &	8 &	3 &	24 &	5 &	2 &	Order Processing & Write-heavy
+	transactions\\
 	Twitter &	5 &	18 &	5 &	4 &	0 &	5 &	0 &	Social Networking & Client-side joins \\
 	& & & & & & & & & on	graph data \\
 	%Wikipedia 	12 	122 	12 	40 	0 	5 	2 	On-line Encyclopedia 	Complex trans,
