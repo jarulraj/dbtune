@@ -13,7 +13,9 @@ import sys
 def fetch_pg_version(cur):
     cur.execute("SELECT split_part(version(), ' ', 2)")
     res = cur.fetchall()
-    return tuple(map(int, res[0][0].split(".")))
+    val = res[0][0].split("devel")[0]
+    val = val.split(".")[1]
+    return tuple(map(int, val))
 
 def fetch_index_hits(cur):
     cur.execute("SELECT (sum(idx_blks_hit)) / (1 + sum(idx_blks_hit + idx_blks_read)) AS ratio FROM pg_statio_user_indexes")
