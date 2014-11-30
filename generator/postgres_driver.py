@@ -9,7 +9,22 @@ import pprint
 import time
 import json
 import sys
+import os
 import traceback
+import subprocess
+import logging
+import datetime
+import re
+import glob
+
+import io
+from configobj import ConfigObj        
+
+# # CONFIGURATION
+BASE_DIR = os.path.dirname(__file__)
+PG_CONFIG_DIR = os.path.join(BASE_DIR, "../db/data")
+PG_CTL = "pg_ctl"
+PG_CONFIG_FILE = PG_CONFIG_DIR + "/postgresql.conf"
 
 def fetch_pg_version(cur):
     cur.execute("SELECT split_part(version(), ' ', 2)")
@@ -166,4 +181,34 @@ def get_stats(db, map):
     
     cur.close()
     conn.close()
+    
+# Mutate PG config and restart    
+def mutate_config():
+
+    log_name = "log.txt"
+    log_file = open(log_name, 'w')
+
+    try:   
+        #pg_ctl -D /home/parallels/git/dbtune/db/data stop 
+        #subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'stop'], stdout=log_file)              
+
+        # Tweak file
+        print(PG_CONFIG_FILE)
+        
+        config = ConfigObj(PG_CONFIG_FILE)
+        print(config.keys())
+
+        print(config.get('shared_buffers'))
+    
+        #pg_ctl -D /home/parallels/git/dbtune/db/data start
+        #subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'start'], stdout=log_file)              
+    
+    except subprocess.CalledProcessError, e:
+        print(repr(e))
+        traceback.print_exc(file=sys.stdout)
+        
+    sys.exit(0)            
+
+    log_file.close()
+    
 

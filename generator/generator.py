@@ -19,12 +19,14 @@ import numpy as np
 import csv
 import options
 from lxml import etree
-from postgres_driver import get_stats
 import numpy as np
 from collections import OrderedDict
 
 from cpuinfo import cpuinfo 
 import psutil
+
+from postgres_driver import get_stats
+from postgres_driver import mutate_config
 
 # # LOGGING CONFIGURATION
 LOG = logging.getLogger(__name__)
@@ -144,7 +146,7 @@ def get_weights(benchmark, run):
     return weights_str
        
 # Execute OLTP BENCH
-def execute_oltpbench(num_runs):
+def execute_oltpbench(num_runs, mutate):
     LOG.info("Executing OLTP Bench")
     
     def cleanup(prefix):
@@ -162,6 +164,10 @@ def execute_oltpbench(num_runs):
     os.chdir(OLTP_BENCH_DIR)
  
     for run_itr in range(0, num_runs):
+ 
+        # Mutate config
+        if mutate:
+            mutate_config()
  
         # Pick benchmark and generate config file
         benchmark = random.choice(BENCHMARKS)
@@ -241,15 +247,19 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='Run experiments')
     parser.add_argument('-r', '--num_runs', type=str, help='num runs')
+    parser.add_argument('-m', '--mutate', help='mutate config', action='store_true')
 
     args = parser.parse_args()    
-
+    
     num_runs = NUM_RUNS     
     
     if args.num_runs:        
         num_runs = int(args.num_runs)                 
 
-    execute_oltpbench(num_runs)
+    if args.mutate:
+        execute_oltpbench(num_runs, True)
+    else:
+        execute_oltpbench(num_runs, False)
 
     csv_file.close()
     LOG.info("Done")
