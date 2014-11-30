@@ -1,3 +1,2 @@
 eclipse.preferences.version=1
-encoding//classifier/clustering.py=utf-8
-encoding//classifier/svm.py=utf-8
+encoding//classifier/classifier.py=utf-8

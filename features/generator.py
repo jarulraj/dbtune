@@ -17,11 +17,11 @@ import random
 
 import numpy as np
 import csv
-from options import *
+import options
 from lxml import etree
-
 from postgres_driver import get_stats
 import numpy as np
+from collections import OrderedDict
 
 # # LOGGING CONFIGURATION
 LOG = logging.getLogger(__name__)
@@ -40,11 +40,9 @@ OLTP_BENCH_DIR = BASE_DIR + "./bench/oltpbench"
 OLTP_BENCH = "./oltpbenchmark"
 OUTPUT_FILE = "features.csv"
 
-NUM_TRAIN = 30
-#BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
-#WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9}
-BENCHMARKS = ['ycsb']
-WEIGHTS = {'ycsb': 6}
+NUM_RUNS = 10
+BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
+WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9}
 
 # GLOBALS
 csv_file = open(OUTPUT_FILE, 'wb')
@@ -60,8 +58,8 @@ def parse_ob_summary(output, map):
         if line_cnt == 1:
             map['Database'] = line.strip()
         if line_cnt == 2:
-            if 'Benchmark' not in map:
-                map['Benchmark'] = line.strip()  
+            if 'AA_Benchmark' not in map:
+                map['AA_Benchmark'] = line.strip()  
         if line_cnt == 3:
             entry = line.split(',')
             for pair in entry:
@@ -99,16 +97,16 @@ def get_weights(benchmark, run):
         
         if ycsb_type == 1:
             weights = [ 0, 100, 0, 0, 0, 0 ]
-            run['Benchmark'] = 'ycsb_read_only' 
+            run['AA_Benchmark'] = 'ycsb_read_only' 
         elif ycsb_type == 2:
             weights = [ 80.0, 20.0, 0, 0, 0, 0 ]
-            run['Benchmark'] = 'ycsb_read_heavy' 
+            run['AA_Benchmark'] = 'ycsb_read_heavy' 
         elif ycsb_type == 3:
             weights = [ 50.0, 50.0, 0, 0, 0, 0 ]
-            run['Benchmark'] = 'ycsb_balanced' 
+            run['AA_Benchmark'] = 'ycsb_balanced' 
         elif ycsb_type == 4:
             weights = [ 20.0, 80.0, 0, 0, 0, 0 ]            
-            run['Benchmark'] = 'ycsb_write_heavy' 
+            run['AA_Benchmark'] = 'ycsb_write_heavy' 
 
         if ycsb_type != 1:         
             weights[0] = min(100.0, weights[0] + ycsb_perturb)
@@ -127,7 +125,7 @@ def get_weights(benchmark, run):
     return weights_str
        
 # Execute OLTP BENCH
-def execute_oltpbench():
+def execute_oltpbench(num_runs):
     LOG.info("Executing OLTP Bench")
     
     def cleanup(prefix):
@@ -144,7 +142,7 @@ def execute_oltpbench():
     cwd = os.getcwd()
     os.chdir(OLTP_BENCH_DIR)
  
-    for run_itr in range(0, NUM_TRAIN):
+    for run_itr in range(0, num_runs):
  
         # Pick benchmark and generate config file
         benchmark = random.choice(BENCHMARKS)
@@ -172,25 +170,32 @@ def execute_oltpbench():
         ob_execute = 'true'
         ob_window = str(100)
         prefix = 'output'
-    
-        # ./oltpbenchmark -b ycsb -c ../config/ycsb_config.xml --create=true --load=true --execute=true -s 5 -o
-        subprocess.check_call([OLTP_BENCH, '-b', benchmark, '-c', ob_config_file, 
-                         '--create', ob_create, '--load', ob_load, '--execute', ob_execute, '-s', ob_window, '-o', prefix],
-                              stdout = log_file)
+
+        try:    
+            # ./oltpbenchmark -b ycsb -c ../config/ycsb_config.xml --create=true --load=true --execute=true -s 5 -o
+            subprocess.check_call([OLTP_BENCH, '-b', benchmark, '-c', ob_config_file, 
+                             '--create', ob_create, '--load', ob_load, '--execute', ob_execute, '-s', ob_window, '-o', prefix],
+                                  stdout = log_file)              
+        except subprocess.CalledProcessError, e:
+            continue
                           
         # Get stats from OLTP Bench
         parse_ob_summary(prefix, run);    
 
         # Get conf from OLTP Bench
-        #parse_db_conf(prefix, run);    
+        parse_db_conf(prefix, run);    
 
         # Get stats from PG
         get_stats(benchmark, run) 
     
         # Remove empty features
         #run = dict((k, v) for k, v in run.iteritems() if v)
-                        
+        
+        run = OrderedDict(sorted(run.items(), key=lambda t: t[0]))                
         wr = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
+        
+        if run_itr == 0:
+            wr.writerow(run.keys())
         wr.writerow(run.values())
 
         # Cleanup output files
@@ -213,11 +218,14 @@ if __name__ == '__main__':
     LOG.info("Feature generator")
     
     parser = argparse.ArgumentParser(description='Run experiments')
-    parser.add_argument("-y", "--run-ycsb", help='run ycsb', action='store_true')
+    parser.add_argument('-r', '--num_runs', type=str, help='num runs')
 
     args = parser.parse_args()    
-             
-    execute_oltpbench()
+
+    num_runs = NUM_RUNS             
+    num_runs = int(args.num_runs)                 
+
+    execute_oltpbench(num_runs)
 
     csv_file.close()
     LOG.info("Done")

@@ -8,6 +8,7 @@ bin/
 *.ben
 .classpath
 *.pyc
+*.pdf
 
 ## -------------------------------
 ## Kate Swap Files

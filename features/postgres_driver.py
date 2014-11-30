@@ -9,6 +9,7 @@ import pprint
 import time
 import json
 import sys
+import traceback
 
 def fetch_pg_version(cur):
     cur.execute("SELECT split_part(version(), ' ', 2)")
@@ -82,8 +83,8 @@ def fetch_seq_scans(cur):
     cur.execute("SELECT sum(seq_scan), sum(idx_scan) FROM pg_stat_user_tables")
     res = cur.fetchall()
     return [
-        ("sequential_scans", str(res[0][0])),
-        ("index_scans", str(res[0][1]))
+        ("sequential_scans", res[0][0]),
+        ("index_scans", res[0][1])
     ]
 
 # KEY DB STATS
@@ -144,17 +145,24 @@ def get_stats(db, map):
         
         reset = reset_stats(cur)
         
-        map['PG_Index_Hits'] =  index_hits
-        map['PG_Cache_Hits'] =  cache_hits
+        # Normalize
+        num_txns = float(db_stats[0][1]) + float(db_stats[1][1]) # commit + rollback
+        
+        map['PG_Index_Hits'] =  float(index_hits)/num_txns
+        map['PG_Cache_Hits'] =  float(cache_hits)/num_txns
         
         for metric, count in scans:
-            map['PG_' +  metric] = count
+            if count is None:
+                map['PG_' +  metric] = 0            
+            else:
+                map['PG_' +  metric] = float(count)/num_txns
             
         for metric, count in db_stats:
-            map['PG_' +  metric] = count
+            map['PG_' +  metric] = float(count)/num_txns
         
     except Exception as e:
         print(repr(e))
+        traceback.print_exc(file=sys.stdout)    
     
     cur.close()
     conn.close()
