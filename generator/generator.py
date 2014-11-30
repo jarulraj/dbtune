@@ -23,6 +23,9 @@ from postgres_driver import get_stats
 import numpy as np
 from collections import OrderedDict
 
+from cpuinfo import cpuinfo 
+import psutil
+
 # # LOGGING CONFIGURATION
 LOG = logging.getLogger(__name__)
 LOG_handler = logging.StreamHandler()
@@ -87,8 +90,24 @@ def parse_db_conf(output, map):
         entry = line.split('=')
         map[entry[0].strip()] = entry[1].strip()                                       
     
-# Get weights
+# SYS CONF
+def get_sys_conf(map):
 
+    info = cpuinfo.get_cpu_info()
+    #pprint.pprint(info)
+
+    map['SYS_hz_actual'] = info['hz_actual']
+    map['SYS_raw_arch_string'] = info['raw_arch_string']
+    map['SYS_l2_cache_size'] = info['l2_cache_size']
+    map['SYS_brand'] = info['brand']
+    map['SYS_cpu_count'] = info['count']
+
+    meminfo = psutil.virtual_memory()
+    #pprint.pprint(meminfo)
+    map['SYS_total_mem'] = float(meminfo[0])
+    map['SYS_percent_free'] = meminfo[2]
+
+# Get weights
 def get_weights(benchmark, run):
 
     if benchmark == 'ycsb':
@@ -184,6 +203,9 @@ def execute_oltpbench(num_runs):
 
         # Get conf from OLTP Bench
         parse_db_conf(prefix, run);    
+
+        # Get system conf
+        get_sys_conf(run);    
 
         # Get stats from PG
         get_stats(benchmark, run) 
