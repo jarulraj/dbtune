@@ -9,6 +9,7 @@ bin/
 .classpath
 *.pyc
 *.pdf
+db/data*
 
 ## -------------------------------
 ## Kate Swap Files

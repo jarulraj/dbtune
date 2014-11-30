@@ -38,7 +38,7 @@ LOG.setLevel(logging.INFO)
 BASE_DIR = os.path.dirname(__file__)
 OLTP_BENCH_DIR = BASE_DIR + "./bench/oltpbench"
 OLTP_BENCH = "./oltpbenchmark"
-OUTPUT_FILE = "features.csv"
+OUTPUT_FILE = "data.csv"
 
 NUM_RUNS = 10
 BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark']
@@ -149,7 +149,7 @@ def execute_oltpbench(num_runs):
         pprint.pprint("RUN " + str(run_itr) + " :: " + str(benchmark))       
          
         ob_base_config_file = '../config/' + benchmark + '_config.xml'
-        ob_config_file = '../../features/config/test_' + str(run_itr) + '_' + benchmark + '_config.xml' 
+        ob_config_file = '../../generator/config/test_' + str(run_itr) + '_' + benchmark + '_config.xml' 
     
         tree = etree.parse(ob_base_config_file)
         #tree.find('scalefactor').text = '0.23'
@@ -222,8 +222,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()    
 
-    num_runs = NUM_RUNS             
-    num_runs = int(args.num_runs)                 
+    num_runs = NUM_RUNS     
+    
+    if args.num_runs:        
+        num_runs = int(args.num_runs)                 
 
     execute_oltpbench(num_runs)
 
