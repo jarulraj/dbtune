@@ -201,16 +201,26 @@ def execute_oltpbench(num_runs, mutate, long_run):
         prefix = 'output'
 
         try:
-            # ./oltpbenchmark -b ycsb -c ../config/ycsb_config.xml --create=true --load=true --execute=true -s 5 -o
-            subprocess.check_call([OLTP_BENCH,
-                                   '-b', benchmark,
-                                   '-c', ob_config_file,
-                                   #'--create', ob_create,
-                                   #'--load', ob_load,
-                                   '--execute', ob_execute,
-                                   '-s', ob_window,
-                                   '-o', prefix],
-                                  stdout = log_file)
+            if benchmark == "seats":
+                # ./oltpbenchmark -b seats -c ../config/seats_config.xml --execute=true -s 5 -o
+                subprocess.check_call([OLTP_BENCH,
+                                       '-b', benchmark,
+                                       '-c', ob_config_file,
+                                       '--execute', ob_execute,
+                                       '-s', ob_window,
+                                       '-o', prefix],
+                                      stdout = log_file)
+            else:
+                # ./oltpbenchmark -b ycsb -c ../config/ycsb_config.xml --create=true --load=true --execute=true -s 5 -o
+                subprocess.check_call([OLTP_BENCH,
+                                       '-b', benchmark,
+                                       '-c', ob_config_file,
+                                       '--create', ob_create,
+                                       '--load', ob_load,
+                                       '--execute', ob_execute,
+                                       '-s', ob_window,
+                                       '-o', prefix],
+                                      stdout = log_file)
         except subprocess.CalledProcessError, e:
             continue
 
