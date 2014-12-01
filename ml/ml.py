@@ -289,6 +289,8 @@ def gp_estimator(X, y):
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
+    print(y_test)
+    print(y_pred)
     print(r2_score(y_test, y_pred))
 
 ## ==============================================
