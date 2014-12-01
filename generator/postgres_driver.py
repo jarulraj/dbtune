@@ -186,7 +186,27 @@ def get_stats(db, map):
 # PARAMETER CONF
 parameters = {}
     
-parameters['shared_buffers'] = ['4MB', '128MB', '512MB']
+# RESOURCE USAGE 
+parameters['shared_buffers'] = ['4MB', '32MB', '128MB', '512MB']
+parameters['bgwriter_delay'] = ['100ms', '1000ms', '10000ms']
+
+# WAL
+parameters['wal_level'] = ['minimal', 'archive', 'hot_standby', 'logical']
+parameters['fsync'] = ['on', 'off']
+parameters['synchronous_commit'] = ['on', 'off']
+parameters['wal_buffers'] = ['-1', '4MB', '32MB', '128MB']
+parameters['wal_writer_delay'] = ['100ms', '1000ms', '10000ms']
+parameters['commit_delay'] = ['1000','10000', '100000']
+
+# RUNTIME STATISTICS
+parameters['track_activities'] = ['on','off']
+parameters['log_planner_stats'] = ['on','off']
+
+# ERROR REPORTING AND LOGGING
+parameters['debug_print_plan'] = ['on','off']
+
+# AUTOVACUUM
+parameters['autovacuum'] = ['on','off']
     
 # Pick val for parameters 
 def pick_val(attr):    
@@ -202,26 +222,25 @@ def mutate_config():
 
     try:   
         #pg_ctl -D /home/parallels/git/dbtune/db/data stop 
-        #subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'stop'], stdout=log_file)              
+        subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'stop'], stdout=log_file)              
 
         # Tweak config file
         #print(PG_CONFIG_FILE)        
         config = ConfigObj(PG_CONFIG_FILE)
         
-        for attr in parameters:
+        for attr in parameters:            
             config[attr] = pick_val(attr)
+            #print(config[attr])
                             
         config.write()
     
         #pg_ctl -D /home/parallels/git/dbtune/db/data start
-        #subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'start'], stdout=log_file)              
+        subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'start'], stdout=log_file)              
     
     except subprocess.CalledProcessError, e:
         print(repr(e))
         traceback.print_exc(file=sys.stdout)
         
-    sys.exit(0)            
-
     log_file.close()
     
 
