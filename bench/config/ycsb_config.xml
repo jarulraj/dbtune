@@ -13,11 +13,11 @@
     <scalefactor>0.05</scalefactor>
     
     <!-- The workload -->
-    <terminals>5</terminals>
+    <terminals>50</terminals>
     <works>
         <work>
           <time>3</time>
-          <rate>10</rate>
+          <rate>10000</rate>
           <weights>90,10,0,0,0,0</weights>
         </work>
     </works>

@@ -18,11 +18,11 @@
     <base_ip>10.1.</base_ip>
     
     <!-- The workload -->
-    <terminals>5</terminals>
+    <terminals>10</terminals>
     <works>
         <work>
             <time>3</time>
-            <rate>1000</rate>
+            <rate>10000</rate>
             <weights>0.07,0.07,7.6725,91.2656,0.9219</weights>
         </work>
     </works>
