@@ -45,8 +45,8 @@ OLTP_BENCH_DIR = BASE_DIR + "./bench/oltpbench"
 OLTP_BENCH = "./oltpbenchmark"
 
 NUM_RUNS = 10
-BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark', 'epinions', 'tpcc']
-WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9, 'epinions' : 9, 'tpcc' : 5}
+BENCHMARKS = ['ycsb', 'tatp', 'twitter', 'auctionmark', 'epinions', 'tpcc', 'seats']
+WEIGHTS = {'ycsb': 6, 'tatp' : 7, 'twitter' : 5, 'auctionmark' : 9, 'epinions' : 9, 'tpcc' : 5, 'seats' : 6}
 
 # GLOBALS
 csv_file = None
