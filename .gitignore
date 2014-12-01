@@ -28,7 +28,8 @@ target
 
 #*.csv
 *.txt
-config*
+#config*
+generator/config
 
 ## -------------------------------
 ## LATEX

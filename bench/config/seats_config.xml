@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<parameters>
+
+    <!-- Connection details -->
+    <dbtype>postgres</dbtype>
+    <driver>org.postgresql.Driver</driver>
+    <DBUrl>jdbc:postgresql://localhost:5432/seats</DBUrl>
+    <username>postgres</username>
+    <password>postgres</password>
+    <isolation>TRANSACTION_SERIALIZABLE</isolation>
+
+    <!-- Scalefactor in SEATS scales by *1000 the number of customers-->
+    <scalefactor>1</scalefactor>
+
+    <!-- The workload -->
+    <terminals>10</terminals>
+    <works>
+        <work>
+          <time>3</time>
+          <rate>10000</rate>
+          <weights>10, 10, 35, 20, 10, 15</weights>
+        </work>
+    </works>
+
+    <!-- SEATS Procedures declaration -->
+    <transactiontypes>
+        <transactiontype>
+                <name>DeleteReservation</name>
+        </transactiontype>
+        <transactiontype>
+                <name>FindFlights</name>
+        </transactiontype>
+        <transactiontype>
+                <name>FindOpenSeats</name>
+        </transactiontype>
+        <transactiontype>
+                <name>NewReservation</name>
+        </transactiontype>
+        <transactiontype>
+                <name>UpdateCustomer</name>
+        </transactiontype>
+        <transactiontype>
+                <name>UpdateReservation</name>
+        </transactiontype>
+    </transactiontypes>
+</parameters>
