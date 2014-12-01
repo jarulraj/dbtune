@@ -182,6 +182,16 @@ def get_stats(db, map):
     cur.close()
     conn.close()
     
+# Pick val for parameters 
+def pick_val(attr):
+    parameters = {}
+    
+    parameters['']
+    
+
+
+    
+    
 # Mutate PG config and restart    
 def mutate_config():
 
@@ -199,6 +209,12 @@ def mutate_config():
         print(config.keys())
 
         print(config.get('shared_buffers'))
+        
+        config['shared_buffers'] = pick_val('shared_buffers')
+        
+        print(config.get('shared_buffers'))
+    
+        config.write()
     
         #pg_ctl -D /home/parallels/git/dbtune/db/data start
         #subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'start'], stdout=log_file)              
