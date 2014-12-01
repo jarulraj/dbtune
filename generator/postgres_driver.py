@@ -16,6 +16,7 @@ import logging
 import datetime
 import re
 import glob
+import random
 
 import io
 from configobj import ConfigObj        
@@ -181,16 +182,17 @@ def get_stats(db, map):
     
     cur.close()
     conn.close()
+
+# PARAMETER CONF
+parameters = {}
+    
+parameters['shared_buffers'] = ['4MB', '128MB', '512MB']
     
 # Pick val for parameters 
-def pick_val(attr):
-    parameters = {}
-    
-    parameters['']
-    
-
-
-    
+def pick_val(attr):    
+    lt = parameters[attr]
+    val = random.choice(lt)
+    return val 
     
 # Mutate PG config and restart    
 def mutate_config():
@@ -202,18 +204,13 @@ def mutate_config():
         #pg_ctl -D /home/parallels/git/dbtune/db/data stop 
         #subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'stop'], stdout=log_file)              
 
-        # Tweak file
-        print(PG_CONFIG_FILE)
-        
+        # Tweak config file
+        #print(PG_CONFIG_FILE)        
         config = ConfigObj(PG_CONFIG_FILE)
-        print(config.keys())
-
-        print(config.get('shared_buffers'))
         
-        config['shared_buffers'] = pick_val('shared_buffers')
-        
-        print(config.get('shared_buffers'))
-    
+        for attr in parameters:
+            config[attr] = pick_val(attr)
+                            
         config.write()
     
         #pg_ctl -D /home/parallels/git/dbtune/db/data start
