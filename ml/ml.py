@@ -320,7 +320,7 @@ def estimate_performance(file):
             X_throughput = X_throughput_combined[sample_filter, :]
             y_throughput = y_throughput_combined[sample_filter, :]
 
-            print("Found %d samples, doing two-way CV" % X_throughput.size)
+            print("Found %d samples, doing two-way CV" % X_throughput.shape[0])
 
             [X_train, y_train, X_test, y_test] = split_data(X_throughput, y_throughput, 2)
             instance.fit(X_train, y_train)
@@ -365,7 +365,7 @@ if __name__ == '__main__':
     if args.file:
         [X, y, num_labels] = preprocess(args.file, normalize_data, label_field)
 
-    #get_info(True)
+    get_info(False)
 
     # CLASSIFICATION
 
