@@ -23,6 +23,9 @@ from sklearn.externals.six import StringIO
 import pydot
 
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import Normalizer
+from sklearn.pipeline import make_pipeline
 from sklearn import metrics
 import sklearn.cross_validation
 import sklearn.cross_validation as cross_validation
@@ -273,8 +276,9 @@ def decision_tree_classifier(X, y):
 
 # LASSO
 def lasso_estimator(X, y):
-    alpha = 0.05
-    clf = linear_model.LassoLars(alpha = alpha)
+    alpha = 0.1
+    clf = linear_model.Lasso(alpha = alpha)
+    #clf = make_pipeline(Normalizer(norm="l2"), linear_model.Lasso(alpha = alpha, max_iter=100))
 
     [X_train, y_train, X_test, y_test] = split_data(X, y, 2)
 
@@ -283,6 +287,7 @@ def lasso_estimator(X, y):
 
     print(y_test)
     print(y_pred)
+    print(clf.sparse_coef_)
     print(r2_score(y_test, y_pred))
 
 # GP
@@ -365,7 +370,7 @@ if __name__ == '__main__':
     if args.file:
         [X, y, num_labels] = preprocess(args.file, normalize_data, label_field)
 
-    get_info(False)
+    get_info(True)
 
     # CLASSIFICATION
 
