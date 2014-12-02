@@ -37,6 +37,7 @@ from sklearn import linear_model
 from sklearn.metrics import r2_score
 from sklearn.metrics import explained_variance_score
 from sklearn import gaussian_process
+from matplotlib.font_manager import FontProperties
 
 # # LOGGING CONFIGURATION
 LOG = logging.getLogger(__name__)
@@ -58,6 +59,26 @@ BENCHMARK_LABEL_FIELD = LABEL_FIELD
 THROUGHPUT_LABEL_FIELD = 1
 LATENCY_LABEL_FIELD=9
 NUM_FOLDS = 5
+
+GRAPH_DIR = './graphs/'
+
+OPT_LABEL_WEIGHT = 'bold'
+OPT_LINE_WIDTH = 6.0
+OPT_MARKER_SIZE = 10.0
+OPT_COLORS = ( '#F58A87', '#80CA86', '#9EC9E9', "#F15854", "#66A26B", "#5DA5DA")
+OPT_MARKERS = (['o', 's', 'v', ">", "h", "v", "^", "x", "d", "<", "|", "8", "|", "_"])
+OPT_FONT_NAME = 'Arial'
+OPT_GRAPH_HEIGHT = 300
+OPT_GRAPH_WIDTH = 400
+
+# SET FONT
+
+LABEL_FONT_SIZE = 20
+TICK_FONT_SIZE = 18
+
+LABEL_FP = FontProperties(family=OPT_FONT_NAME, style='normal', size=LABEL_FONT_SIZE, weight='bold')
+TICK_FP = FontProperties(family=OPT_FONT_NAME, style='normal', size=TICK_FONT_SIZE)
+
 
 feature_list = []
 feature_name_only_list = []
@@ -198,8 +219,8 @@ def estimate_performance(file, label_field, title_format, file_suffix):
     print("===========================================================================")
 
     measurements = [make_lasso_measurement(1, 'k', r'$\alpha = 1$'),
-                    make_lasso_measurement(1e-3, 'b', r'$\alpha = 1\textrm{e}-3$'),
-                    make_lasso_measurement(1e-1, 'g', r'$\alpha = 1\textrm{e}-1$'),
+                    make_lasso_measurement(1e-3, 'b', r'$\alpha = 0.001$'),
+                    make_lasso_measurement(1e-1, 'g', r'$\alpha = 0.1$'),
                     make_lasso_measurement(10, 'r', r'$\alpha = 10$')]
 
     ############
@@ -221,22 +242,30 @@ def estimate_performance(file, label_field, title_format, file_suffix):
     #############
     # Plot Data #
     #############
-    matplotlib.rc('text', usetex=True)
-    plt.figure(figsize=(5, 5))
-    plt.title(title_format.format("Lasso Regression"))
-    plt.xlabel("Number of Samples in 2-way CV")
-    plt.ylabel(r"$\textrm{R}^2$ Score")
-    for measurement in measurements:
-        plt.plot(measurement['x'], measurement['y'], measurement['color'], label=measurement['label'])
-    plt.legend(loc='upper right')
-    plt.savefig("lasso_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
+    #matplotlib.rc('text', usetex=True)
+    plt.figure()
+    #plt.title(title_format.format("Lasso Regression"))
+    plt.xlabel("Number of Samples", fontproperties=LABEL_FP)
+    plt.ylabel("R-Squared Score", fontproperties=LABEL_FP)
+    for idx, measurement in enumerate(measurements):
+        plt.plot(measurement['x'], measurement['y'], label=measurement['label'], color=OPT_COLORS[idx], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
+    
+    plt.legend(loc='lower right', fontsize='x-large')
+    
+    plt.xticks(fontproperties=TICK_FP)
+    plt.yticks(fontproperties=TICK_FP)
+
+    #plt.xlim(1.8,8.2)
+    #plt.ylim(0.0,1.0)
+
+    plt.savefig(GRAPH_DIR + "lasso_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
 
     print("===========================================================================")
     print("Using Gaussian Processes")
     print("===========================================================================")
 
-    measurements = [make_gaussian_measurement(1e-1, 'k', r'$\theta_0 = 1\textrm{e}-1$'),
-                    make_gaussian_measurement(1e-3, 'b', r'$\theta_0 = 1\textrm{e}-3$'),
+    measurements = [make_gaussian_measurement(1e-1, 'k', r'$\theta_0 = 0.1$'),
+                    make_gaussian_measurement(1e-3, 'b', r'$\theta_0 = 0.001$'),
                     make_gaussian_measurement(1, 'g', r'$\theta_0 = 1$'),
                     make_gaussian_measurement(10, 'r', r'$\theta_0 = 10$')]
 
@@ -259,15 +288,22 @@ def estimate_performance(file, label_field, title_format, file_suffix):
     #############
     # Plot Data #
     #############
-    matplotlib.rc('text', usetex=True)
-    plt.figure(figsize=(5, 5))
-    plt.title(title_format.format("Gaussian Process Regression"))
-    plt.xlabel("Number of Samples in 2-way CV")
-    plt.ylabel(r"$\textrm{R}^2$ Score")
-    for measurement in measurements:
-        plt.plot(measurement['x'], measurement['y'], measurement['color'], label=measurement['label'])
-    plt.legend(loc='upper right')
-    plt.savefig("gp_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
+    #matplotlib.rc('text', usetex=True)
+    plt.figure()
+    #plt.title(title_format.format("Gaussian Process Regression"))
+    plt.xlabel("Number of Samples", fontproperties=LABEL_FP)
+    plt.ylabel("R-Squared Score", fontproperties=LABEL_FP)
+    for idx, measurement in enumerate(measurements):
+        plt.plot(measurement['x'], measurement['y'], label=measurement['label'], color=OPT_COLORS[idx], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
+    plt.legend(loc='lower right', fontsize='x-large')
+        
+    #plt.xlim(1.8,8.2)
+    #plt.ylim(0.0,1.0)
+
+    plt.xticks(fontproperties=TICK_FP)
+    plt.yticks(fontproperties=TICK_FP)
+    
+    plt.savefig(GRAPH_DIR + "gp_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
 
 ## ==============================================
 # # main
@@ -276,11 +312,16 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', type=str, help='location of test data')
+    parser.add_argument('-m', '--mutate', help='mutate config', action='store_true')
 
     args = parser.parse_args()
 
     normalize_data = True
     label_field = LABEL_FIELD
 
-    estimate_performance(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "throughput")
-    estimate_performance(args.file, LATENCY_LABEL_FIELD, "Using {0} to Estimate Latency", "latency")
+    suffix = ""
+    if args.mutate:
+        suffix = "_mutate"
+        
+    estimate_performance(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "throughput" + suffix)
+    estimate_performance(args.file, LATENCY_LABEL_FIELD, "Using {0} to Estimate Latency", "latency" + suffix)

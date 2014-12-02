@@ -62,7 +62,7 @@ LABEL_FP = FontProperties(family=OPT_FONT_NAME, style='normal', size=LABEL_FONT_
 TICK_FP = FontProperties(family=OPT_FONT_NAME, style='normal', size=TICK_FONT_SIZE)
 
 # Run
-def run_classifier(X, y, mode):         
+def run_classifier(X, y, mode, mutate):         
     plot_data = {}
     
     if mode == 0:
@@ -74,14 +74,18 @@ def run_classifier(X, y, mode):
         param_name = 'leaves'
         axis_name = "Max Leaf Nodes"
 
+    suffix = ""
+    if args.mutate:
+        suffix = "_mutate"
+        
     precision_list = []
     recall_list = []
                     
     for param in params:
         if mode == 0:
-            plot_data[param] = decision_tree_classifier(X, y, param, None, GRAPH_DIR + "tree_"+ param_name + "_" + str(param)+".pdf")
+            plot_data[param] = decision_tree_classifier(X, y, param, None, GRAPH_DIR + "tree_"+ param_name + "_" + str(param)+ suffix + ".pdf")
         else:
-            plot_data[param] = decision_tree_classifier(X, y, None, param, GRAPH_DIR + "tree_"+ param_name + "_" + str(param)+".pdf")
+            plot_data[param] = decision_tree_classifier(X, y, None, param, GRAPH_DIR + "tree_"+ param_name + "_" + str(param)+ suffix +".pdf")
             
         entry = plot_data[param][0].split('\n')[-2].split('    ')
 
@@ -104,7 +108,7 @@ def run_classifier(X, y, mode):
     plt.xticks(fontproperties=TICK_FP)
     plt.yticks(fontproperties=TICK_FP)
         
-    plt.savefig(GRAPH_DIR + param_name + '.pdf')
+    plt.savefig(GRAPH_DIR + param_name +  suffix + '.pdf')
     plt.close()
     
 ## ==============================================
@@ -114,6 +118,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', type=str, help='location of test data')
+    parser.add_argument('-m', '--mutate', help='mutate config', action='store_true')
 
     args = parser.parse_args()
     
@@ -123,5 +128,5 @@ if __name__ == '__main__':
     if args.file:
         [X, y, num_labels] = preprocess(args.file, normalize_data, label_field)
 
-    run_classifier(X, y, 0)
-    run_classifier(X, y, 1)
+    run_classifier(X, y, 0, args.mutate)
+    run_classifier(X, y, 1, args.mutate)
