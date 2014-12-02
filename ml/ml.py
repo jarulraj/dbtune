@@ -267,7 +267,7 @@ def decision_tree_classifier(X, y):
     print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
     dot_data = StringIO()
-    tree.export_graphviz(clf, out_file=dot_data, feature_names=feature_name_only_list)
+    tree.export_graphviz(clf, out_file=dot_data, feature_names=feature_name_only_list[1:])
     graph = pydot.graph_from_dot_data(dot_data.getvalue())
     graph.write_pdf("tree.pdf")
 
