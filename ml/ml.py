@@ -56,6 +56,7 @@ THROUGHPUT_LABEL_FIELD = 1
 NUM_FOLDS = 5
 
 feature_list = []
+feature_name_only_list = []
 benchmark_list = []
 
 # Get info
@@ -99,6 +100,7 @@ def preprocess(filename, normalize_data, label_field):
 
                 for index, item in enumerate(f_list):
                     feature_list.append((index, item))
+                    feature_name_only_list.append(item)
 
                 continue
 
@@ -265,7 +267,7 @@ def decision_tree_classifier(X, y):
     print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
     dot_data = StringIO()
-    tree.export_graphviz(clf, out_file=dot_data)
+    tree.export_graphviz(clf, out_file=dot_data, feature_names=feature_name_only_list)
     graph = pydot.graph_from_dot_data(dot_data.getvalue())
     graph.write_pdf("tree.pdf")
 
@@ -286,6 +288,7 @@ def lasso_estimator(X, y):
 # GP
 def gp_estimator(X, y):
     clf = gaussian_process.GaussianProcess(theta0=1e-2, thetaL=1e-4, thetaU=1e-1)
+    #clf = gaussian_process.GaussianProcess(regr='linear')
 
     [X_train, y_train, X_test, y_test] = split_data(X, y, 2)
 
@@ -323,6 +326,7 @@ def estimate_performance(file):
             instance.fit(X_train, y_train)
             y_pred = instance.predict(X_test)
 
+            np.set_printoptions(suppress=True)
             print(y_test[:20])
             print(y_pred[:20])
 
