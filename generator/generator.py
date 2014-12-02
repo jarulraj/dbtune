@@ -42,6 +42,7 @@ LOG.setLevel(logging.INFO)
 # # CONFIGURATION
 BASE_DIR = os.path.dirname(__file__)
 OLTP_BENCH_DIR = BASE_DIR + "./bench/oltpbench"
+TIMEOUT="timeout"
 OLTP_BENCH = "./oltpbenchmark"
 
 NUM_RUNS = 10
@@ -205,7 +206,10 @@ def execute_oltpbench(num_runs, mutate, long_run):
         try:
             if benchmark == "seats":
                 # ./oltpbenchmark -b seats -c ../config/seats_config.xml --execute=true -s 5 -o
-                subprocess.check_call([OLTP_BENCH,
+                subprocess.check_call([TIMEOUT,
+                                       "-k", "7m",
+                                       "5m",
+                                       OLTP_BENCH,
                                        '-b', benchmark,
                                        '-c', ob_config_file,
                                        '--execute', ob_execute,
@@ -214,7 +218,10 @@ def execute_oltpbench(num_runs, mutate, long_run):
                                       stdout = log_file)
             else:
                 # ./oltpbenchmark -b ycsb -c ../config/ycsb_config.xml --create=true --load=true --execute=true -s 5 -o
-                subprocess.check_call([OLTP_BENCH,
+                subprocess.check_call([TIMEOUT,
+                                       "-k", "7m",
+                                       "5m",
+                                       OLTP_BENCH,
                                        '-b', benchmark,
                                        '-c', ob_config_file,
                                        '--create', ob_create,
