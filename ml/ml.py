@@ -32,6 +32,7 @@ from sklearn import svm
 from sklearn import tree
 from sklearn import linear_model
 from sklearn.metrics import r2_score
+from sklearn.metrics import explained_variance_score
 from sklearn import gaussian_process
 
 # # LOGGING CONFIGURATION
@@ -50,6 +51,8 @@ BASE_DIR = os.path.dirname(__file__)
 
 BENCHMARK_FIELD = 0
 LABEL_FIELD = 0
+BENCHMARK_LABEL_FIELD = LABEL_FIELD
+THROUGHPUT_LABEL_FIELD = 1
 NUM_FOLDS = 5
 
 feature_list = []
@@ -293,6 +296,39 @@ def gp_estimator(X, y):
     print(y_pred)
     print(r2_score(y_test, y_pred))
 
+def estimate_performance(file):
+    methods = [("Lasso Regression", linear_model.Lasso(alpha = 0.05, max_iter = 100000)),
+               ("Gaussian Processes", gaussian_process.GaussianProcess(theta0=1e-2, thetaL=1e-4, thetaU=1e-1))]
+
+    [_, y_benchmark, num_benchmarks] =  preprocess(file, normalize_data, BENCHMARK_LABEL_FIELD)
+    [X_throughput_combined, y_throughput_combined, num_throughputs] = preprocess(file, normalize_data, THROUGHPUT_LABEL_FIELD)
+
+    for name, instance in methods:
+        print("===========================================================================")
+        print("Using method %s" % name)
+        print("===========================================================================")
+
+        for benchmark_number in range(num_benchmarks):
+            print("-----------------------")
+            print("Estimating for benchmark %s" % benchmark_list[benchmark_number][0])
+            print("-----------------------")
+
+            sample_filter = y_benchmark == benchmark_number
+            X_throughput = X_throughput_combined[sample_filter, :]
+            y_throughput = y_throughput_combined[sample_filter, :]
+
+            print("Found %d samples, doing two-way CV" % X_throughput.size)
+
+            [X_train, y_train, X_test, y_test] = split_data(X_throughput, y_throughput, 2)
+            instance.fit(X_train, y_train)
+            y_pred = instance.predict(X_test)
+
+            print(y_test[:20])
+            print(y_pred[:20])
+
+            print("Estimator got R2 Score %f" % r2_score(y_test, y_pred))
+            print("Estimator got Explained Variance %f" % explained_variance_score(y_test, y_pred))
+
 ## ==============================================
 # # main
 ## ==============================================
@@ -305,11 +341,16 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--decision_tree", help='decision_tree', action='store_true')
     parser.add_argument("-l", "--lasso", help='lasso', action='store_true')
     parser.add_argument("-g", "--gp", help='gaussian_process', action='store_true')
+    parser.add_argument("-e", "--estimate_performance", help="Per-benchmark performance estimation", action="store_true")
 
     args = parser.parse_args()
 
     normalize_data = True
     label_field = LABEL_FIELD
+
+    if args.estimate_performance:
+        # shortcut preprocess() below since estimate_performance() does it itself
+        estimate_performance(args.file)
 
     if args.decision_tree:
         normalize_data = False
@@ -320,7 +361,7 @@ if __name__ == '__main__':
     if args.file:
         [X, y, num_labels] = preprocess(args.file, normalize_data, label_field)
 
-    get_info(True)
+    #get_info(True)
 
     # CLASSIFICATION
 
