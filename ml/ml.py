@@ -183,7 +183,7 @@ def clustering_classifier(X, y, num_labels):
                    ("Ward Agglomerative Clustering", cluster.AgglomerativeClustering(n_clusters = num_labels))]
 
     # Plot
-    plt.figure(figsize=(20, 6.5))
+    plt.figure(figsize=(30, 6.5))
     plt.subplots_adjust(left=.001, right=.999, bottom=.001, top=.96, wspace=.05, hspace=.01)
 
     colors = np.array([x for x in 'bgrcmykbgrcmykbgrcmykbgrcmyk'])
@@ -223,7 +223,7 @@ def clustering_classifier(X, y, num_labels):
             # plot
             plt.subplot(1, len(classifiers), plot_num)
             plt.title(name, size = 18)
-            plt.scatter(X[:, 0], X[:, 1], color=colors[y_pred].tolist(), s=10)
+            plt.scatter(X[:, 0], X[:, 1], color=colors[y_pred].tolist(), s=20)
 
             if hasattr(instance, 'cluster_centers_'):
                 centers = instance.cluster_centers_
@@ -233,9 +233,9 @@ def clustering_classifier(X, y, num_labels):
             plt.ylim(-2, 2)
             plt.xticks(())
             plt.yticks(())
-            plt.text(.99, .01, ('%.2fs' % (t1 - t0)).lstrip('0'),
-                     transform=plt.gca().transAxes, size=15,
-                     horizontalalignment='right')
+            #plt.text(.99, .01, ('%.2fs' % (t1 - t0)).lstrip('0'),
+            #         transform=plt.gca().transAxes, size=15,
+            #         horizontalalignment='right')
             plot_num += 1
 
     plt.savefig('clustering.pdf', format='pdf', dpi=1000)
