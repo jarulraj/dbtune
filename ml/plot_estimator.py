@@ -212,7 +212,7 @@ def make_gaussian_measurement(theta0, color, label):
 
 def estimate_performance(file, label_field, title_format, file_suffix):
     [X, y, num_labels] = preprocess(file, normalize_data, label_field)
-    num_samples_list = [5, 10, 100]
+    num_samples_list = [10, 50, 100, 250, 500, 1000]
 
     print("===========================================================================")
     print("Using Lasso Regression")
@@ -220,8 +220,8 @@ def estimate_performance(file, label_field, title_format, file_suffix):
 
     measurements = [make_lasso_measurement(1, 'k', r'$\alpha = 1$'),
                     make_lasso_measurement(1e-3, 'b', r'$\alpha = 0.001$'),
-                    make_lasso_measurement(1e-1, 'g', r'$\alpha = 0.1$'),
-                    make_lasso_measurement(10, 'r', r'$\alpha = 10$')]
+                    make_lasso_measurement(1e-1, 'g', r'$\alpha = 0.1$')]
+
 
     ############
     # Get Data #
@@ -249,9 +249,9 @@ def estimate_performance(file, label_field, title_format, file_suffix):
     plt.ylabel("R-Squared Score", fontproperties=LABEL_FP)
     for idx, measurement in enumerate(measurements):
         plt.plot(measurement['x'], measurement['y'], label=measurement['label'], color=OPT_COLORS[idx], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
-    
+
     plt.legend(loc='lower right', fontsize='x-large')
-    
+
     plt.xticks(fontproperties=TICK_FP)
     plt.yticks(fontproperties=TICK_FP)
 
@@ -266,8 +266,7 @@ def estimate_performance(file, label_field, title_format, file_suffix):
 
     measurements = [make_gaussian_measurement(1e-1, 'k', r'$\theta_0 = 0.1$'),
                     make_gaussian_measurement(1e-3, 'b', r'$\theta_0 = 0.001$'),
-                    make_gaussian_measurement(1, 'g', r'$\theta_0 = 1$'),
-                    make_gaussian_measurement(10, 'r', r'$\theta_0 = 10$')]
+                    make_gaussian_measurement(1, 'g', r'$\theta_0 = 1$')]
 
     ############
     # Get Data #
@@ -296,13 +295,13 @@ def estimate_performance(file, label_field, title_format, file_suffix):
     for idx, measurement in enumerate(measurements):
         plt.plot(measurement['x'], measurement['y'], label=measurement['label'], color=OPT_COLORS[idx], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
     plt.legend(loc='lower right', fontsize='x-large')
-        
+
     #plt.xlim(1.8,8.2)
     #plt.ylim(0.0,1.0)
 
     plt.xticks(fontproperties=TICK_FP)
     plt.yticks(fontproperties=TICK_FP)
-    
+
     plt.savefig(GRAPH_DIR + "gp_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
 
 ## ==============================================
@@ -322,6 +321,6 @@ if __name__ == '__main__':
     suffix = ""
     if args.mutate:
         suffix = "_mutate"
-        
+
     estimate_performance(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "throughput" + suffix)
     estimate_performance(args.file, LATENCY_LABEL_FIELD, "Using {0} to Estimate Latency", "latency" + suffix)
