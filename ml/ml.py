@@ -48,6 +48,7 @@ LOG_formatter = logging.Formatter(
 LOG_handler.setFormatter(LOG_formatter)
 LOG.addHandler(LOG_handler)
 LOG.setLevel(logging.INFO)
+np.set_printoptions(suppress=True)
 
 # # CONFIGURATION
 BASE_DIR = os.path.dirname(__file__)
@@ -256,7 +257,7 @@ def svm_classifier(X, y):
     print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
 # Decision trees
-def decision_tree_classifier(X, y, depth, leaf_nodes, output_file_name):  
+def decision_tree_classifier(X, y, depth, leaf_nodes, output_file_name):
     # Set depth and leaf nodes
     clf = tree.DecisionTreeClassifier(max_depth = depth, max_leaf_nodes= leaf_nodes)
 
@@ -265,15 +266,17 @@ def decision_tree_classifier(X, y, depth, leaf_nodes, output_file_name):
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     metrics_data = metrics.classification_report(y_test, y_pred)
+    print(metrics_data)
 
     scores = cross_validation.cross_val_score(clf, X, y, cv=2, scoring='precision')
     accuracy_data = "Accuracy: %0.2f %0.2f \n" % (scores.mean(), scores.std() * 2)
+    print(accuracy_data)
 
     dot_data = StringIO()
     tree.export_graphviz(clf, out_file=dot_data, feature_names=feature_name_only_list[1:])
     graph = pydot.graph_from_dot_data(dot_data.getvalue())
     graph.write_pdf(output_file_name)
-    
+
     return (metrics_data, accuracy_data)
 
 # LASSO
@@ -383,7 +386,7 @@ if __name__ == '__main__':
         svm_classifier(X, y)
 
     if args.decision_tree:
-        decision_tree_classifier(X, y)
+        decision_tree_classifier(X, y, None, None, "tree.pdf")
 
     # ESTIMATORS
 

@@ -17,9 +17,10 @@ import datetime
 import re
 import glob
 import random
+import time
 
 import io
-from configobj import ConfigObj        
+from configobj import ConfigObj
 
 # # CONFIGURATION
 BASE_DIR = os.path.dirname(__file__)
@@ -143,7 +144,7 @@ def reset_stats(cur):
     return res
 
 def get_stats(db, map):
-        
+
     try:
         conn = psycopg2.connect(database=db, user="postgres", password="postgres", host="localhost", port="5432")
     except psycopg2.OperationalError as e:
@@ -154,39 +155,39 @@ def get_stats(db, map):
         version = fetch_pg_version(cur)
         index_hits = fetch_index_hits(cur)
         cache_hits = fetch_cache_hits(cur)
-                
+
         scans = fetch_seq_scans(cur)
         db_stats = fetch_db_stats(cur, db, version)
         index_sizes = fetch_index_sizes(cur)
-        
+
         reset = reset_stats(cur)
-        
+
         # Normalize
         num_txns = float(db_stats[0][1]) + float(db_stats[1][1]) # commit + rollback
-        
+
         map['PG_Index_Hits'] =  float(index_hits)/num_txns
         map['PG_Cache_Hits'] =  float(cache_hits)/num_txns
-        
+
         for metric, count in scans:
             if count is None:
-                map['PG_' +  metric] = 0            
+                map['PG_' +  metric] = 0
             else:
                 map['PG_' +  metric] = float(count)/num_txns
-            
+
         for metric, count in db_stats:
             map['PG_' +  metric] = float(count)/num_txns
-        
+
     except Exception as e:
         print(repr(e))
-        traceback.print_exc(file=sys.stdout)    
-    
+        traceback.print_exc(file=sys.stdout)
+
     cur.close()
     conn.close()
 
 # PARAMETER CONF
 parameters = {}
-    
-# RESOURCE USAGE 
+
+# RESOURCE USAGE
 parameters['shared_buffers'] = ['4MB', '32MB', '128MB', '512MB']
 parameters['bgwriter_delay'] = ['100ms', '1000ms', '10000ms']
 
@@ -207,40 +208,40 @@ parameters['debug_print_plan'] = ['on','off']
 
 # AUTOVACUUM
 parameters['autovacuum'] = ['on','off']
-    
-# Pick val for parameters 
-def pick_val(attr):    
+
+# Pick val for parameters
+def pick_val(attr):
     lt = parameters[attr]
     val = random.choice(lt)
-    return val 
-    
-# Mutate PG config and restart    
+    return val
+
+# Mutate PG config and restart
 def mutate_config():
 
     log_name = "log.txt"
     log_file = open(log_name, 'w')
 
-    try:   
-        #pg_ctl -D /home/parallels/git/dbtune/db/data stop 
-        subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'stop'], stdout=log_file)              
+    try:
+        #pg_ctl -D /home/parallels/git/dbtune/db/data stop
+        subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'stop'], stdout=log_file)
+        time.sleep(5)
 
         # Tweak config file
-        #print(PG_CONFIG_FILE)        
+        #print(PG_CONFIG_FILE)
         config = ConfigObj(PG_CONFIG_FILE)
-        
-        for attr in parameters:            
+
+        for attr in parameters:
             config[attr] = pick_val(attr)
             #print(config[attr])
-                            
+
         config.write()
-    
+
         #pg_ctl -D /home/parallels/git/dbtune/db/data start
-        subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'start'], stdout=log_file)              
-    
+        subprocess.check_call([PG_CTL, '-D', PG_CONFIG_DIR, 'start'], stdout=log_file)
+        time.sleep(5)
+
     except subprocess.CalledProcessError, e:
         print(repr(e))
         traceback.print_exc(file=sys.stdout)
-        
-    log_file.close()
-    
 
+    log_file.close()
