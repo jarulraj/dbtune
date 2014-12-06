@@ -75,10 +75,11 @@ def get_info(feature_info):
 
 
 # Preprocess feature data
-def preprocess(filename, normalize_data, label_field):
+def preprocess(filename, normalize_data, label_field, discard_latency):
     X = np.array([])
     y = np.array([])
     num_features = None
+    already_reshaped = False
     global feature_list
     global benchmark_list
 
@@ -141,6 +142,14 @@ def preprocess(filename, normalize_data, label_field):
                         next_text_feature_number[column] += 1
 
                 converted_row = np.append(converted_row, [ converted_value ])
+
+            converted_row = np.append(converted_row[:26], converted_row[27:])
+
+            if discard_latency:
+                converted_row = np.append(np.append(converted_row[:4], [ converted_row[9] ]), converted_row[13:])
+                if not already_reshaped:
+                    X = X.reshape(0, converted_row.shape[0] - 1)
+                    already_reshaped = True
 
             X = np.concatenate( (X, [ np.append(converted_row[:label_field], converted_row[label_field + 1:]) ]))
             y = np.append(y, [ converted_row[label_field] ])
@@ -276,7 +285,7 @@ def decision_tree_classifier(X, y, depth, leaf_nodes, output_file_name):
     tree.export_graphviz(clf, out_file=dot_data, feature_names=feature_name_only_list[1:])
     graph = pydot.graph_from_dot_data(dot_data.getvalue())
     graph.write_pdf(output_file_name)
-    
+
     return (metrics_data, accuracy_data)
 
 # LASSO
@@ -294,8 +303,8 @@ def lasso_estimator(X, y):
     print(y_pred)
     #print(clf.sparse_coef_)
     print(r2_score(y_test, y_pred))
-    
-    #train_scores, test_scores = validation_curve(clf, X, y, param_name = "alpha", param_range =  np.logspace(-3, 3, 6), scoring="r2")   
+
+    #train_scores, test_scores = validation_curve(clf, X, y, param_name = "alpha", param_range =  np.logspace(-3, 3, 6), scoring="r2")
 
     #pprint.pprint(train_scores)
     #pprint.pprint(test_scores)
@@ -303,8 +312,8 @@ def lasso_estimator(X, y):
 
 # GP
 def gp_estimator(X, y):
-    #clf = gaussian_process.GaussianProcess(theta0=1e-2)
-    clf = gaussian_process.GaussianProcess(regr='constant', theta0=1e-2)
+    clf = gaussian_process.GaussianProcess(corr='absolute_exponential')
+    #clf = gaussian_process.GaussianProcess(regr='constant', theta0=1e-2)
 
     [X_train, y_train, X_test, y_test] = split_data(X, y, 3)
 
@@ -315,7 +324,7 @@ def gp_estimator(X, y):
     print(y_pred)
     print(r2_score(y_test, y_pred))
 
-    train_scores, test_scores = validation_curve(clf, X, y, param_name = "theta0", param_range =  np.logspace(-3, 3, 6), scoring="r2")   
+    train_scores, test_scores = validation_curve(clf, X, y, param_name = "theta0", param_range =  np.logspace(-3, 3, 6), scoring="r2")
 
     pprint.pprint(train_scores)
     pprint.pprint(test_scores)
@@ -368,6 +377,7 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--lasso", help='lasso', action='store_true')
     parser.add_argument("-g", "--gp", help='gaussian_process', action='store_true')
     parser.add_argument("-e", "--estimate_performance", help="Per-benchmark performance estimation", action="store_true")
+    parser.add_argument("-t", "--latency", help="avg latency performance estimation", action="store_true")
 
     args = parser.parse_args()
 
@@ -384,8 +394,11 @@ if __name__ == '__main__':
     if args.lasso or args.gp:
         label_field = 1         # THROUGHPUT
 
+    if args.latency:
+        label_field = 4
+
     if args.file:
-        [X, y, num_labels] = preprocess(args.file, normalize_data, label_field)
+        [X, y, num_labels] = preprocess(args.file, normalize_data, label_field, args.latency)
 
     get_info(True)
 

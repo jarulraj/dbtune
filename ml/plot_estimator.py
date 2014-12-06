@@ -57,7 +57,7 @@ BENCHMARK_FIELD = 0
 LABEL_FIELD = 0
 BENCHMARK_LABEL_FIELD = LABEL_FIELD
 THROUGHPUT_LABEL_FIELD = 1
-LATENCY_LABEL_FIELD=9
+LATENCY_LABEL_FIELD=4
 NUM_FOLDS = 5
 
 GRAPH_DIR = './graphs/'
@@ -95,10 +95,11 @@ def get_info(feature_info):
 
 
 # Preprocess feature data
-def preprocess(filename, normalize_data, label_field):
+def preprocess(filename, normalize_data, label_field, discard_latency):
     X = np.array([])
     y = np.array([])
     num_features = None
+    already_reshaped = False
     global feature_list
     global benchmark_list
 
@@ -162,6 +163,12 @@ def preprocess(filename, normalize_data, label_field):
 
                 converted_row = np.append(converted_row, [ converted_value ])
 
+            if discard_latency:
+                converted_row = np.append(np.append(converted_row[:4], [ converted_row[9] ]), converted_row[13:])
+                if not already_reshaped:
+                    X = X.reshape(0, converted_row.shape[0] - 1)
+                    already_reshaped = True
+
             X = np.concatenate( (X, [ np.append(converted_row[:label_field], converted_row[label_field + 1:]) ]))
             y = np.append(y, [ converted_row[label_field] ])
 
@@ -183,7 +190,6 @@ def preprocess(filename, normalize_data, label_field):
     inputfile.close()
 
     return (X, y, num_labels)
-
 
 # Splitting helper
 def split_data(X, y, ratio):
@@ -211,7 +217,7 @@ def make_gaussian_measurement(theta0, color, label):
             'label': label}
 
 def estimate_performance(file, label_field, title_format, file_suffix):
-    [X, y, num_labels] = preprocess(file, normalize_data, label_field)
+    [X, y, num_labels] = preprocess(file, normalize_data, label_field, label_field == LATENCY_LABEL_FIELD)
     num_samples_list = [10, 50, 100, 250, 500, 1000]
 
     print("===========================================================================")
@@ -219,7 +225,7 @@ def estimate_performance(file, label_field, title_format, file_suffix):
     print("===========================================================================")
 
     measurements = [make_lasso_measurement(1, 'k', r'$\alpha = 1$'),
-                    make_lasso_measurement(1e-3, 'b', r'$\alpha = 0.001$'),
+                    #make_lasso_measurement(1e-3, 'b', r'$\alpha = 0.001$'),
                     make_lasso_measurement(1e-1, 'g', r'$\alpha = 0.1$')]
 
 
@@ -265,7 +271,7 @@ def estimate_performance(file, label_field, title_format, file_suffix):
     print("===========================================================================")
 
     measurements = [make_gaussian_measurement(1e-1, 'k', r'$\theta_0 = 0.1$'),
-                    make_gaussian_measurement(1e-3, 'b', r'$\theta_0 = 0.001$'),
+                    #make_gaussian_measurement(1e-3, 'b', r'$\theta_0 = 0.001$'),
                     make_gaussian_measurement(1, 'g', r'$\theta_0 = 1$')]
 
     ############
