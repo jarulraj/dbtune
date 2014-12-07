@@ -54,36 +54,34 @@ np.set_printoptions(suppress=True)
 # # CONFIGURATION
 BASE_DIR = os.path.dirname(__file__)
 
-BENCHMARK_FIELD = 0
-LABEL_FIELD = 0
-BENCHMARK_LABEL_FIELD = LABEL_FIELD
-THROUGHPUT_LABEL_FIELD = 1
+BENCHMARK_LABEL_FIELD = "AA_Benchmark"
+THROUGHPUT_LABEL_FIELD = "AA_Throughput"
+LATENCY_AVG_LABEL_FIELD = "Latency_99th"
 NUM_FOLDS = 5
 
-feature_list = []
-feature_name_only_list = []
+index_to_feature_map = []
 benchmark_list = []
 
 # Get info
 def get_info(feature_info):
     # FEATURE LIST
     if feature_info:
-        print(feature_list)
+        print ("Index to Feature Map in X is:")
+        for index, feature in enumerate(index_to_feature_map):
+            print("    {0:>3} : {1}".format(index, feature))
 
     # BENCHMARK LIST
     print(benchmark_list)
 
 
 # Preprocess feature data
-def preprocess(filename, normalize_data, label_field, discard_latency):
+def preprocess(filename, normalize_data, label_field, features_to_discard):
     X = np.array([])
     y = np.array([])
     num_features = None
-    already_reshaped = False
-    global feature_list
+    feature_to_index_map = {}
+    global index_to_feature_map
     global benchmark_list
-
-    print("LABEL FIELD : " + str(label_field))
 
     with open(filename, "rb") as inputfile:
         text_feature_map = {}
@@ -95,25 +93,25 @@ def preprocess(filename, normalize_data, label_field, discard_latency):
             length = len(rawdata_i)
 
             if i == 0:
-                num_features = length - 1
+                num_features = length
                 f_list = rawdata_i
 
-                if num_features < 1:
+                if num_features < 2:
                     sys.exit("Need at least one feature and exactly one label!")
 
                 print("Detected " + str(num_features) + " features")
                 X = X.reshape(0, num_features)
 
                 for index, item in enumerate(f_list):
-                    feature_list.append((index, item))
-                    feature_name_only_list.append(item)
+                    feature_to_index_map[item] = index
+                    index_to_feature_map.append(item)
 
                 continue
 
             # Check row length
-            if length != (num_features + 1):
+            if length != (num_features):
                 sys.exit("Row " + str(i + 1) + " has " + str(length) + " elements! Expected " +
-                         str(num_features + 1) + " elements")
+                         str(num_features) + " elements")
 
             # Convert row to numbers
             converted_row = np.array([])
@@ -143,16 +141,25 @@ def preprocess(filename, normalize_data, label_field, discard_latency):
 
                 converted_row = np.append(converted_row, [ converted_value ])
 
-            converted_row = np.append(converted_row[:26], converted_row[27:])
+            # append converted row to X
+            X = np.vstack((X, converted_row))
 
-            if discard_latency:
-                converted_row = np.append(np.append(converted_row[:4], [ converted_row[9] ]), converted_row[13:])
-                if not already_reshaped:
-                    X = X.reshape(0, converted_row.shape[0] - 1)
-                    already_reshaped = True
+    # extract labels
+    y = X[:, feature_to_index_map[label_field]]
+    print("Label field is \"{0}\", at index {1}".format(label_field, feature_to_index_map[label_field]))
 
-            X = np.concatenate( (X, [ np.append(converted_row[:label_field], converted_row[label_field + 1:]) ]))
-            y = np.append(y, [ converted_row[label_field] ])
+    # Discard features and labels from X
+    print("Discarding {0} from features".format(features_to_discard))
+    features_to_discard.append(label_field)
+    indices_to_keep = filter(lambda index: not index_to_feature_map[index] in features_to_discard,
+                             range(X.shape[1]))
+    X = X[:, indices_to_keep]
+
+    # Update index_to_feature_map
+    new_index_to_feature_map = []
+    for index in indices_to_keep:
+        new_index_to_feature_map.append(index_to_feature_map[index])
+    index_to_feature_map = new_index_to_feature_map
 
     # Normalize features
     if normalize_data:
@@ -165,7 +172,7 @@ def preprocess(filename, normalize_data, label_field, discard_latency):
     num_labels = len(y_counter.keys())
 
     # BENCHMARK LIST
-    benchmark_list = text_feature_map[BENCHMARK_FIELD]
+    benchmark_list = text_feature_map[feature_to_index_map[BENCHMARK_LABEL_FIELD]]
     benchmark_list = sorted(benchmark_list.items(), key=lambda x:x[1])
 
     print("Detected " + str(num_labels) + " labels")
@@ -282,7 +289,7 @@ def decision_tree_classifier(X, y, depth, leaf_nodes, output_file_name):
     print(accuracy_data)
 
     dot_data = StringIO()
-    tree.export_graphviz(clf, out_file=dot_data, feature_names=feature_name_only_list[1:])
+    tree.export_graphviz(clf, out_file=dot_data, feature_names=index_to_feature_map)
     graph = pydot.graph_from_dot_data(dot_data.getvalue())
     graph.write_pdf(output_file_name)
 
@@ -301,7 +308,9 @@ def lasso_estimator(X, y):
 
     print(y_test)
     print(y_pred)
-    #print(clf.sparse_coef_)
+    for index, weight in enumerate(clf.coef_):
+        if (weight != 0):
+            print ("{0} : {1}".format(index_to_feature_map[index], weight))
     print(r2_score(y_test, y_pred))
 
     #train_scores, test_scores = validation_curve(clf, X, y, param_name = "alpha", param_range =  np.logspace(-3, 3, 6), scoring="r2")
@@ -312,8 +321,8 @@ def lasso_estimator(X, y):
 
 # GP
 def gp_estimator(X, y):
-    clf = gaussian_process.GaussianProcess(corr='absolute_exponential')
-    #clf = gaussian_process.GaussianProcess(regr='constant', theta0=1e-2)
+    clf = gaussian_process.GaussianProcess(theta0=1e-2, corr='absolute_exponential')
+    #clf = gaussian_process.GaussianProcess(regr='linear')
 
     [X_train, y_train, X_test, y_test] = split_data(X, y, 3)
 
@@ -334,7 +343,7 @@ def estimate_performance(file):
     methods = [("Lasso Regression", linear_model.Lasso(alpha = 0.05)),
                ("Gaussian Processes", gaussian_process.GaussianProcess(theta0=1e-2))]
 
-    [_, y_benchmark, num_benchmarks] =  preprocess(file, normalize_data, BENCHMARK_LABEL_FIELD)
+    [_, y_benchmark, num_benchmarks] =  preprocess(file, normalize_data, BENCHMARK_LABEL_FIELD, [])
     [X_throughput_combined, y_throughput_combined, num_throughputs] = preprocess(file, normalize_data, THROUGHPUT_LABEL_FIELD)
 
     for name, instance in methods:
@@ -378,11 +387,13 @@ if __name__ == '__main__':
     parser.add_argument("-g", "--gp", help='gaussian_process', action='store_true')
     parser.add_argument("-e", "--estimate_performance", help="Per-benchmark performance estimation", action="store_true")
     parser.add_argument("-t", "--latency", help="avg latency performance estimation", action="store_true")
+    parser.add_argument("-v", "--verbose", help="verbose information", action="store_true")
 
     args = parser.parse_args()
 
     normalize_data = True
-    label_field = LABEL_FIELD
+    label_field = BENCHMARK_LABEL_FIELD
+    features_to_discard = []
 
     if args.estimate_performance:
         # shortcut preprocess() below since estimate_performance() does it itself
@@ -390,17 +401,48 @@ if __name__ == '__main__':
 
     if args.decision_tree:
         normalize_data = False
+        features_to_discard.extend(["AA_Throughput",
+                                    "Latency_25th",
+                                    "Latency_75th",
+                                    "Latency_90th",
+                                    "Latency_95th",
+                                    "Latency_99th",
+                                    "Latency_avg",
+                                    "Latency_max",
+                                    "Latency_median",
+                                    "Latency_min",
+                                    "Scalefactor",
+                                    "Isolation",
+                                    "Terminals"])
 
     if args.lasso or args.gp:
-        label_field = 1         # THROUGHPUT
+        label_field = THROUGHPUT_LABEL_FIELD
+        features_to_discard.extend(["Latency_25th",
+                                    "Latency_75th",
+                                    "Latency_90th",
+                                    "Latency_95th",
+                                    "Latency_99th",
+                                    "Latency_avg",
+                                    "Latency_max",
+                                    "Latency_median",
+                                    "Latency_min"])
 
     if args.latency:
-        label_field = 4
+        label_field = LATENCY_AVG_LABEL_FIELD
+        features_to_discard.extend(["Latency_25th",
+                                    "Latency_75th",
+                                    "Latency_90th",
+                                    "Latency_95th",
+                                    "Latency_99th",
+                                    "Latency_avg",
+                                    "Latency_max",
+                                    "Latency_median",
+                                    "Latency_min"])
 
     if args.file:
-        [X, y, num_labels] = preprocess(args.file, normalize_data, label_field, args.latency)
+        [X, y, num_labels] = preprocess(args.file, normalize_data, label_field, features_to_discard)
 
-    get_info(True)
+    get_info(args.verbose)
 
     # CLASSIFICATION
 
@@ -411,7 +453,7 @@ if __name__ == '__main__':
         svm_classifier(X, y)
 
     if args.decision_tree:
-        decision_tree_classifier(X, y, None, None, "tree.pdf")
+        decision_tree_classifier(X, y, 6, None, "tree.pdf")
 
     # ESTIMATORS
 
