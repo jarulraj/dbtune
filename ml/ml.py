@@ -54,10 +54,9 @@ np.set_printoptions(suppress=True)
 # # CONFIGURATION
 BASE_DIR = os.path.dirname(__file__)
 
-BENCHMARK_FIELD = 0
-LABEL_FIELD = 0
-BENCHMARK_LABEL_FIELD = LABEL_FIELD
-THROUGHPUT_LABEL_FIELD = 1
+BENCHMARK_LABEL_FIELD = "AA_Benchmark"
+THROUGHPUT_LABEL_FIELD = "AA_Throughput"
+LATENCY_AVG_LABEL_FIELD = "Latency_avg"
 NUM_FOLDS = 5
 
 feature_list = []
@@ -276,14 +275,14 @@ def decision_tree_classifier(X, y, depth, leaf_nodes, output_file_name):
     tree.export_graphviz(clf, out_file=dot_data, feature_names=feature_name_only_list[1:])
     graph = pydot.graph_from_dot_data(dot_data.getvalue())
     graph.write_pdf(output_file_name)
-    
+
     return (metrics_data, accuracy_data)
 
 # LASSO
 def lasso_estimator(X, y):
     alpha = 0.1
-    #clf = linear_model.Lasso(alpha = alpha)
-    clf = make_pipeline(Normalizer(norm="l2"), linear_model.Lasso(alpha = alpha))
+    clf = linear_model.Lasso(alpha = alpha)
+    #clf = make_pipeline(Normalizer(norm="l2"), linear_model.Lasso(alpha = alpha))
 
     [X_train, y_train, X_test, y_test] = split_data(X, y, 3)
 
@@ -294,8 +293,8 @@ def lasso_estimator(X, y):
     print(y_pred)
     #print(clf.sparse_coef_)
     print(r2_score(y_test, y_pred))
-    
-    #train_scores, test_scores = validation_curve(clf, X, y, param_name = "alpha", param_range =  np.logspace(-3, 3, 6), scoring="r2")   
+
+    #train_scores, test_scores = validation_curve(clf, X, y, param_name = "alpha", param_range =  np.logspace(-3, 3, 6), scoring="r2")
 
     #pprint.pprint(train_scores)
     #pprint.pprint(test_scores)
@@ -303,8 +302,8 @@ def lasso_estimator(X, y):
 
 # GP
 def gp_estimator(X, y):
-    #clf = gaussian_process.GaussianProcess(theta0=1e-2)
-    clf = gaussian_process.GaussianProcess(regr='constant', theta0=1e-2)
+    clf = gaussian_process.GaussianProcess(theta0=1e-2, corr='absolute_exponential', regr='constant')
+    #clf = gaussian_process.GaussianProcess(regr='linear')
 
     [X_train, y_train, X_test, y_test] = split_data(X, y, 3)
 
@@ -313,20 +312,37 @@ def gp_estimator(X, y):
 
     print(y_test)
     print(y_pred)
+    plt.figure()
+    plt.hist(y_test)
+    plt.show()
+    plt.figure()
+    plt.hist(y_pred)
+    plt.show()
     print(r2_score(y_test, y_pred))
 
-    train_scores, test_scores = validation_curve(clf, X, y, param_name = "theta0", param_range =  np.logspace(-5, 3, 8), scoring="r2")   
+    train_scores, test_scores = validation_curve(clf, X, y, param_name = "theta0", param_range =  np.logspace(-5, 3, 8), scoring="r2")
 
     pprint.pprint(train_scores)
     pprint.pprint(test_scores)
 
+# GP
+def svr_estimator(X, y):
+    clf = svm.SVR(kernel='linear', C=1e3, degree=4)
 
-def estimate_performance(file):
-    methods = [("Lasso Regression", linear_model.Lasso(alpha = 0.05)),
-               ("Gaussian Processes", gaussian_process.GaussianProcess(theta0=1e-2))]
+    [X_train, y_train, X_test, y_test] = split_data(X, y, 3)
 
-    [_, y_benchmark, num_benchmarks] =  preprocess(file, normalize_data, BENCHMARK_LABEL_FIELD)
-    [X_throughput_combined, y_throughput_combined, num_throughputs] = preprocess(file, normalize_data, THROUGHPUT_LABEL_FIELD)
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+
+    print(r2_score(y_test, y_pred))
+
+def estimate_performance(file, features_to_discard):
+    methods = [#("Lasso Regression", linear_model.Lasso(alpha = 0.05)),
+               #("Gaussian Processes", gaussian_process.GaussianProcess(theta0=1e-2, corr='absolute_exponential')),
+               ("SVR", svm.SVR(kernel="linear", C=1e3, degree=4))]
+
+    [_, y_benchmark, num_benchmarks] =  preprocess(file, normalize_data, BENCHMARK_LABEL_FIELD, features_to_discard)
+    [X_throughput_combined, y_throughput_combined, num_throughputs] = preprocess(file, normalize_data, THROUGHPUT_LABEL_FIELD, features_to_discard)
 
     for name, instance in methods:
         print("===========================================================================")
@@ -340,7 +356,7 @@ def estimate_performance(file):
 
             sample_filter = y_benchmark == benchmark_number
             X_throughput = X_throughput_combined[sample_filter, :]
-            y_throughput = y_throughput_combined[sample_filter, :]
+            y_throughput = y_throughput_combined[sample_filter]
 
             print("Found %d samples, doing two-way CV" % X_throughput.shape[0])
 
@@ -368,21 +384,41 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--lasso", help='lasso', action='store_true')
     parser.add_argument("-g", "--gp", help='gaussian_process', action='store_true')
     parser.add_argument("-e", "--estimate_performance", help="Per-benchmark performance estimation", action="store_true")
+    parser.add_argument("-t", "--latency", help="avg latency performance estimation", action="store_true")
+    parser.add_argument("-v", "--verbose", help="verbose information", action="store_true")
+    parser.add_argument("-r", "--svr", help="svr estimation", action="store_true")
 
     args = parser.parse_args()
 
     normalize_data = True
-    label_field = LABEL_FIELD
+    label_field = BENCHMARK_LABEL_FIELD
+    features_to_discard = ["AA_Throughput",
+                           "Latency_25th",
+                           "Latency_75th",
+                           "Latency_90th",
+                           "Latency_95th",
+                           "Latency_99th",
+                           "Latency_avg",
+                           "Latency_max",
+                           "Latency_median",
+                           "Latency_min",
+                           "Scalefactor",
+                           "Isolation",
+                           "Terminals"]
 
     if args.estimate_performance:
         # shortcut preprocess() below since estimate_performance() does it itself
-        estimate_performance(args.file)
+        estimate_performance(args.file, features_to_discard)
 
     if args.decision_tree:
         normalize_data = False
+        features_to_discard.extend()
 
-    if args.lasso or args.gp:
-        label_field = 1         # THROUGHPUT
+    if args.lasso or args.gp or args.svr:
+        label_field = THROUGHPUT_LABEL_FIELD
+
+    if args.latency:
+        label_field = LATENCY_AVG_LABEL_FIELD
 
     if args.file:
         [X, y, num_labels] = preprocess(args.file, normalize_data, label_field)
@@ -407,3 +443,6 @@ if __name__ == '__main__':
 
     if args.gp:
         gp_estimator(X, y)
+
+    if args.svr:
+        svr_estimator(X, y)
