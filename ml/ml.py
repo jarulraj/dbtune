@@ -412,7 +412,6 @@ if __name__ == '__main__':
 
     if args.decision_tree:
         normalize_data = False
-        features_to_discard.extend()
 
     if args.lasso or args.gp or args.svr:
         label_field = THROUGHPUT_LABEL_FIELD
