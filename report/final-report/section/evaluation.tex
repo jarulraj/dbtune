@@ -1,54 +1,79 @@
 \section{Evaluation} \label{sec:eval}
 
-We use the ``scikit-learn'' \citep{scikit-learn} package for Python
-as our framework for evaluating different machine learning algorithms. 
-In exploring the best way to map workloads onto benchmarks, we evaluated both
-clustering algorithms as well as SVM. The rest of this section discusses the results we
-observed with each method.
-
-Clustering was our first approach as an unsupervised algorithm seemed
-to best fit the data at hand. As such, we tried the following methods,
-all of which are inbuilt in scikit-learn:\\
-
+We address two problems in our experiments :
 \begin{itemize}
-\item K-Means
-\item Affinity Propagation
-\item Mean-Shift
-\item Ward Agglomerative Clustering
-\item DBSCAN
+	\item Mapping a SQL workload to a benchmark class.
+	\item Estimating the performance of the DBMS using the features and the class
+	model.
 \end{itemize}
 
-The clusters found by each algorithm can be seen in
-\cref{fig:clusters}. We also calculated common clustering metrics such
-as homogeneity, completeness, and V-measure. These results can be
-found in \cref{fig:clustering-metrics}. From the results, we notice
-immediately that DBSCAN does not work well with our data. Indeed, it
-does not find any distinct clusters at all. However, K-Means and Ward
-Agglomerative Clustering algorithms perform well. 
-Both of these algorithms require number of clusters as a 
-parameter. 
-However, this is not a restriction for our problem as we
-know the number of benchmarks - and hence the number of clusters -
-that we have.
+We note that we leave the problem of using the performance estimator to find
+an optimal DBMS configuration for a given workload for future work. The
+estimator allows us to obtain inexpensive estimates without actually running
+the workload on the DBMS under a specific configuration.
 
-In addition to evaluating clustering algorithms, we also evaluated
-Support Vector Machines, a supervised classifier. While real-world
-data will not be labeled and hence a supervised classifier cannot be
-used, it is still useful to see how effective our features are in
-discriminating between benchmarks. Using a simple two-fold
-cross-validation, we found that a simple SVM with an RBF kernel
-achieved 86\% precision but with a very high standard deviation of
-28\%. However, this is still a very strong result as it indicates that
-our features effectively separate our data into our desired
-classes. 
-We plan to validate the classifier on more sophisticated heterogeneous 
-real-world workloads as part of our stretch goal.
+We first describe the experimental setup and information about the dataset
+in \cref{sec:setup}. Then, we present the results for the
+workload mapping/classification problem in \cref{sec:classfication} and for the
+performance estimation problem in \cref{sec:estimation}. Finally, we discuss
+the conclusions and future work in \cref{sec:conclusion}.
 
-The immediate next step is to build an estimator that allows us to address the
-second goal of this project. We already have the infrastructure required
-for collecting metrics and features required for solving this problem.
-We plan to explore different machine learning algorithms to solve this
-problem in the coming weeks.
- 
+\subsection{Experimental Setup}
+\label{sec:setup}
 
+All our experiments are performed on the machine described in \cref{tab:setup}.
+We deploy Linux kernel 3.2.0 on the machine and disable logical processor
+support (“Hyper-Threading”).
+We use the Scikit \citep{scikit-learn} framework in Python 3 for
+evaluating different machine learning algorithms.
+Our auto-tuning framework currently only supports Postgres 9.5. We plan to
+extend it to support other database management systems like MySQL in future
+work.
+
+\begin{table}
+\centering
+\small{
+  \centering
+  \begin{tabular}{l|l} 
+	\toprule
+   		Attribute &  Value  \\    
+    \midrule
+		CPU   &   8 cores (Intel i7-3770 @ 3.7 GHz)  \\
+		DRAM   &  16 GiB  \\
+		L2 cache  &  256 KiB  \\
+		L3 cache  &  8 MiB  \\		
+   \bottomrule
+   \end{tabular}
+ }
+\caption{Experimental setup.}
+\label{tab:setup}
+\end{table}
+
+The dataset consists of 10 benchmark classes. These include all the benchmarks
+described in \cref{tab:benchmarks}. We consider 4 variants of the YCSB key-value
+store benchmark. These variants map to different read-write mixtures and are
+listed below :
+
+\begin{itemize}
+  \item {Read-only : 100\% reads 0\% writes } 
+  \item {Read-heavy : 80\% reads 20\% writes } 
+  \item {Balanced : 50\% reads 50\% writes } 
+  \item {Write-heavy : 20\% reads 80\% writes } 
+\end{itemize}
+
+We added these variants to stress-test the classifiers and estimators as these
+variants can overlap with other benchmark classes along some dimensions in
+high-dimensional space. 
+
+For each run of the DBMS, we first generate a configuration by picking
+values for 12 key configuration parameters listed in \cref{tab:mutate}.
+We then select a random benchmark and alter the transaction mix of the
+benchmark i.e. the proportion of different types of transactions in 
+the specific benchmark. After running the benchmark for atleast more than
+1 minute, we halt the system.  We then collect the dynamic features from the
+DBMS and the benchmarking framework. We also collect the static features
+from the specific DBMS configuration. These features and metrics constitute
+one sample in the dataset.
+Each sample consists of 272 features and our dataset consists of $\sim$1000
+such samples.
 

@@ -45,21 +45,22 @@ emulate real world workloads. The key characteristics of the benchmarks
 that we use for generating the dataset are presented in \cref{tab:benchmarks}.
 
 \begin{table*}
-\centering
-\small{
   \centering
-  \begin{tabular}{lllll lllll} \toprule
-   Workloads & Tables & Columns & Pr. & Indexes &	Fr. & 
+  \begin{adjustbox}{max width=\textwidth}
+  \begin{tabular}{l|lllllllll} \toprule
+   Benchmarks & Tables & Columns & Pr. & Indexes &	Fr. & 
    Txn. & \# of & Application  & Attributes  \\
    & & & Keys & & Keys & Types & Joins  & domain & \\
    \midrule
 	AuctionMark 	& 16 	& 125  &	16 &	14 &	41 &	10 &	10 &	Online &
 	Non-deterministic\\
 	& & & & & & & & Auctions &  heavy transactions \\
-	%Epinions 	5 	21 	2 	10 	0 	9 	3 	Social Networking 	Joins over many-to-many%relationships 
+	Epinions 		& 5 	& 21   & 	2  &	10 &	 0 & 	9  &	3  &	Social  & Joins over
+	many-to- \\
+	& & & & & & & & Networking & many relationships  \\
 	%JPAB 	7 	68 	6 	5 	3 	4 	N/A 	Object-Relational Mapping 	Bursts of random%reads, pointer chasing 
 	%ResourceStresser 	4 	23 	4 	0 	0 	6 	2 	Isolated Resource Stresser 	CPU-,disk-, lock-heavy transactions 
-	SEATS &	10 &	189 &	9 	& 5 	& 12 	& 6 &	6 &	On-line Airline  &
+	SEATS &	10 &	189 &	9 	& 5 	& 12 	& 6 &	6 &	Online Airline  &
 	Secondary indices queries\\
 	& & & & & & & & Ticketing & foreign-key joins \\
 	TATP &	4 	& 51 &	4 &	5 &	3 &	7 &	1 &	Caller Location  &	Short, read-mostly\\
@@ -69,12 +70,12 @@ that we use for generating the dataset are presented in \cref{tab:benchmarks}.
 	transactions\\
 	Twitter &	5 &	18 &	5 &	4 &	0 &	5 &	0 &	Social Networking & Client-side joins \\
 	& & & & & & & & & on	graph data \\
-	%Wikipedia 	12 	122 	12 	40 	0 	5 	2 	On-line Encyclopedia 	Complex trans,
-	% large data, skew 
-	YCSB &	1 &	11 &	1 &	0 &	0 &	6 &	0 &	Scalable NoSQL store &	Key-value queries \\
+	Wikipedia &	12 &	122 &	12 &	40 &	0 &	5 &	2 &	Online &	Complex	transactions \\ 
+	& & & & & & & & Encyclopedia & large data, skew  \\
+	YCSB &	1 &	11 &	1 &	0 &	0 &	6 &	0 &	NoSQL store &	Key-value queries \\
    \bottomrule
    \end{tabular}
- }
+   \end{adjustbox} 
 \caption{Key characteristics of the benchmarks used in our evaluation. ``Pr. key''
 denotes primary key and ``Fr. key'' denotes foreign key.}
 \label{tab:benchmarks}
