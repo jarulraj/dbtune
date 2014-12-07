@@ -59,29 +59,29 @@ THROUGHPUT_LABEL_FIELD = "AA_Throughput"
 LATENCY_AVG_LABEL_FIELD = "Latency_avg"
 NUM_FOLDS = 5
 
-feature_list = []
-feature_name_only_list = []
+index_to_feature_map = []
 benchmark_list = []
 
 # Get info
 def get_info(feature_info):
     # FEATURE LIST
     if feature_info:
-        print(feature_list)
+        print("Index to Feature Map in X:")
+        for index, feature in enumerate(index_to_feature_map):
+            print("  {0:>3} : {1}".format(index, feature))
 
     # BENCHMARK LIST
     print(benchmark_list)
 
 
 # Preprocess feature data
-def preprocess(filename, normalize_data, label_field):
+def preprocess(filename, normalize_data, label_field, features_to_discard):
     X = np.array([])
     y = np.array([])
     num_features = None
-    global feature_list
+    feature_to_index_map = {}
+    global index_to_feature_map
     global benchmark_list
-
-    print("LABEL FIELD : " + str(label_field))
 
     with open(filename, "rb") as inputfile:
         text_feature_map = {}
@@ -93,25 +93,25 @@ def preprocess(filename, normalize_data, label_field):
             length = len(rawdata_i)
 
             if i == 0:
-                num_features = length - 1
+                num_features = length
                 f_list = rawdata_i
 
-                if num_features < 1:
+                if num_features < 2:
                     sys.exit("Need at least one feature and exactly one label!")
 
                 print("Detected " + str(num_features) + " features")
                 X = X.reshape(0, num_features)
 
                 for index, item in enumerate(f_list):
-                    feature_list.append((index, item))
-                    feature_name_only_list.append(item)
+                    feature_to_index_map[item] = index
+                    index_to_feature_map.append(item)
 
                 continue
 
             # Check row length
-            if length != (num_features + 1):
+            if length != (num_features):
                 sys.exit("Row " + str(i + 1) + " has " + str(length) + " elements! Expected " +
-                         str(num_features + 1) + " elements")
+                         str(num_features) + " elements")
 
             # Convert row to numbers
             converted_row = np.array([])
@@ -130,7 +130,7 @@ def preprocess(filename, normalize_data, label_field):
                         else:
                             print(X[:i-1,column])
                             sys.exit("Encountered text feature \"" + entry + "\" in row " +
-                                     str(i + 1) + " for numerical column " + feature_list[column] + "!")
+                                     str(i + 1) + " for numerical column " + index_to_feature_map[column] + "!")
 
                     if entry in text_feature_map[column]:
                         converted_value = text_feature_map[column][entry]
@@ -141,8 +141,25 @@ def preprocess(filename, normalize_data, label_field):
 
                 converted_row = np.append(converted_row, [ converted_value ])
 
-            X = np.concatenate( (X, [ np.append(converted_row[:label_field], converted_row[label_field + 1:]) ]))
-            y = np.append(y, [ converted_row[label_field] ])
+            # append converted row to X
+            X = np.vstack((X, converted_row))
+
+    # extract labels
+    y = X[:, feature_to_index_map[label_field]]
+    print("Label field is \"{0}\", at index {1}".format(label_field, feature_to_index_map[label_field]))
+
+    # Discard features and labels from X
+    print("Discarding {0} from features".format(features_to_discard))
+    features_to_discard.append(label_field)
+    indices_to_keep = filter(lambda index: not index_to_feature_map[index] in features_to_discard,
+                             range(X.shape[1]))
+    X = X[:, indices_to_keep]
+
+    # Update index_to_feature_map
+    new_index_to_feature_map = []
+    for index in indices_to_keep:
+        new_index_to_feature_map.append(index_to_feature_map[index])
+    index_to_feature_map = new_index_to_feature_map
 
     # Normalize features
     if normalize_data:
@@ -155,14 +172,13 @@ def preprocess(filename, normalize_data, label_field):
     num_labels = len(y_counter.keys())
 
     # BENCHMARK LIST
-    benchmark_list = text_feature_map[BENCHMARK_FIELD]
+    benchmark_list = text_feature_map[feature_to_index_map[BENCHMARK_LABEL_FIELD]]
     benchmark_list = sorted(benchmark_list.items(), key=lambda x:x[1])
 
     print("Detected " + str(num_labels) + " labels")
     inputfile.close()
 
     return (X, y, num_labels)
-
 
 # Splitting helper
 def split_data(X, y, ratio):
@@ -272,7 +288,7 @@ def decision_tree_classifier(X, y, depth, leaf_nodes, output_file_name):
     print(accuracy_data)
 
     dot_data = StringIO()
-    tree.export_graphviz(clf, out_file=dot_data, feature_names=feature_name_only_list[1:])
+    tree.export_graphviz(clf, out_file=dot_data, feature_names=index_to_feature_map)
     graph = pydot.graph_from_dot_data(dot_data.getvalue())
     graph.write_pdf(output_file_name)
 
@@ -420,9 +436,9 @@ if __name__ == '__main__':
         label_field = LATENCY_AVG_LABEL_FIELD
 
     if args.file:
-        [X, y, num_labels] = preprocess(args.file, normalize_data, label_field)
+        [X, y, num_labels] = preprocess(args.file, normalize_data, label_field, features_to_discard)
 
-    get_info(True)
+    get_info(args.verbose)
 
     # CLASSIFICATION
 
