@@ -393,7 +393,7 @@ def per_benchmark_gp(file, label_field, title_format, hist_x_label, hist_range, 
         plt.figure()
         plt.xlabel(hist_x_label, fontproperties=LABEL_FP)
         plt.ylabel("Number of Samples", fontproperties=LABEL_FP)
-        plt.hist(y_test, range=hist_range, bins=num_bins)
+        plt.hist(y_test, range=hist_range, bins=num_bins, color=OPT_COLORS[2])
         plt.ylim(hist_ylim)
         plt.savefig(GRAPH_DIR + "{0}_test_hist_{1}.pdf".format(index_to_benchmark_map[benchmark_number],
                                                                file_suffix),
@@ -404,7 +404,7 @@ def per_benchmark_gp(file, label_field, title_format, hist_x_label, hist_range, 
         plt.figure()
         plt.xlabel(hist_x_label, fontproperties=LABEL_FP)
         plt.ylabel("Number of Samples", fontproperties=LABEL_FP)
-        plt.hist(y_pred, range=hist_range, bins=num_bins)
+        plt.hist(y_pred, range=hist_range, bins=num_bins, color=OPT_COLORS[2])
         plt.ylim(hist_ylim)
         plt.savefig(GRAPH_DIR + "{0}_pred_hist_{1}.pdf".format(index_to_benchmark_map[benchmark_number],
                                                                file_suffix),
