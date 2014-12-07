@@ -305,9 +305,13 @@ def lasso_estimator(X, y):
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
-    print(y_test)
-    print(y_pred)
-    #print(clf.sparse_coef_)
+    #print(y_test)
+    #print(y_pred)
+    print("Non-zero Weights in Lasso:")
+    for index, weight in enumerate(clf.coef_):
+        if (weight != 0):
+            print("  {0:>15} : {1:<15}".format(index_to_feature_map[index], weight))
+
     print(r2_score(y_test, y_pred))
 
     #train_scores, test_scores = validation_curve(clf, X, y, param_name = "alpha", param_range =  np.logspace(-3, 3, 6), scoring="r2")
