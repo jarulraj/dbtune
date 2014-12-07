@@ -38,8 +38,8 @@ LOG.setLevel(logging.INFO)
 # # CONFIGURATION
 BASE_DIR = os.path.dirname(__file__)
 
-DTREE_MAX_DEPTHS = [2, 4, 8]
-DTREE_MAX_LEAVES = [2, 4, 8]
+DTREE_MAX_DEPTHS = [2, 4, 8, 16, 32, 64]
+DTREE_MAX_LEAVES = [2, 4, 8, 16, 32, 64]
 
 GRAPH_DIR = './graphs/'
 LABEL_FIELD = 0
@@ -103,14 +103,14 @@ def run_classifier(X, y, mode, mutate):
 
     plt.xlabel(axis_name, fontproperties=LABEL_FP)
     plt.ylabel("Score", fontproperties=LABEL_FP)
-    plt.xlim(1.8,8.2)
+    #plt.xlim(1.8,8.2)
     plt.ylim(0.0,1.0)
     plt.xticks(fontproperties=TICK_FP)
     plt.yticks(fontproperties=TICK_FP)
         
     plt.savefig(GRAPH_DIR + param_name +  suffix + '.pdf')
     plt.close()
-    
+        
 ## ==============================================
 # # main
 ## ==============================================

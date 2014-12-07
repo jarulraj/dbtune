@@ -37,6 +37,7 @@ from sklearn import linear_model
 from sklearn.metrics import r2_score
 from sklearn.metrics import explained_variance_score
 from sklearn import gaussian_process
+from sklearn.learning_curve import validation_curve
 
 # # LOGGING CONFIGURATION
 LOG = logging.getLogger(__name__)
@@ -244,16 +245,15 @@ def clustering_classifier(X, y, num_labels):
 
 # SVM
 def svm_classifier(X, y):
-
     clf = svm.SVC()
 
-    [X_train, y_train, X_test, y_test] = split_data(X, y, 2)
+    [X_train, y_train, X_test, y_test] = split_data(X, y, 3)
 
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     print(metrics.classification_report(y_test, y_pred))
 
-    scores = cross_validation.cross_val_score(clf, X, y, cv=2, scoring='precision')
+    scores = cross_validation.cross_val_score(clf, X, y, scoring='precision')
     print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
 # Decision trees
@@ -268,7 +268,7 @@ def decision_tree_classifier(X, y, depth, leaf_nodes, output_file_name):
     metrics_data = metrics.classification_report(y_test, y_pred)
     print(metrics_data)
 
-    scores = cross_validation.cross_val_score(clf, X, y, cv=2, scoring='precision')
+    scores = cross_validation.cross_val_score(clf, X, y, scoring='f1')
     accuracy_data = "Accuracy: %0.2f %0.2f \n" % (scores.mean(), scores.std() * 2)
     print(accuracy_data)
 
@@ -276,31 +276,37 @@ def decision_tree_classifier(X, y, depth, leaf_nodes, output_file_name):
     tree.export_graphviz(clf, out_file=dot_data, feature_names=feature_name_only_list[1:])
     graph = pydot.graph_from_dot_data(dot_data.getvalue())
     graph.write_pdf(output_file_name)
-
+    
     return (metrics_data, accuracy_data)
 
 # LASSO
 def lasso_estimator(X, y):
     alpha = 0.1
-    clf = linear_model.Lasso(alpha = alpha)
-    #clf = make_pipeline(Normalizer(norm="l2"), linear_model.Lasso(alpha = alpha, max_iter=100))
+    #clf = linear_model.Lasso(alpha = alpha)
+    clf = make_pipeline(Normalizer(norm="l2"), linear_model.Lasso(alpha = alpha))
 
-    [X_train, y_train, X_test, y_test] = split_data(X, y, 2)
+    [X_train, y_train, X_test, y_test] = split_data(X, y, 3)
 
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
     print(y_test)
     print(y_pred)
-    print(clf.sparse_coef_)
+    #print(clf.sparse_coef_)
     print(r2_score(y_test, y_pred))
+    
+    #train_scores, test_scores = validation_curve(clf, X, y, param_name = "alpha", param_range =  np.logspace(-3, 3, 6), scoring="r2")   
+
+    #pprint.pprint(train_scores)
+    #pprint.pprint(test_scores)
+
 
 # GP
 def gp_estimator(X, y):
-    clf = gaussian_process.GaussianProcess(theta0=1e-2, thetaL=1e-4, thetaU=1e-1)
-    #clf = gaussian_process.GaussianProcess(regr='linear')
+    #clf = gaussian_process.GaussianProcess(theta0=1e-2)
+    clf = gaussian_process.GaussianProcess(regr='constant', theta0=1e-2)
 
-    [X_train, y_train, X_test, y_test] = split_data(X, y, 2)
+    [X_train, y_train, X_test, y_test] = split_data(X, y, 3)
 
     clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
@@ -309,9 +315,15 @@ def gp_estimator(X, y):
     print(y_pred)
     print(r2_score(y_test, y_pred))
 
+    train_scores, test_scores = validation_curve(clf, X, y, param_name = "theta0", param_range =  np.logspace(-3, 3, 6), scoring="r2")   
+
+    pprint.pprint(train_scores)
+    pprint.pprint(test_scores)
+
+
 def estimate_performance(file):
-    methods = [("Lasso Regression", linear_model.Lasso(alpha = 0.05, max_iter = 100000)),
-               ("Gaussian Processes", gaussian_process.GaussianProcess(theta0=1e-2, thetaL=1e-4, thetaU=1e-1))]
+    methods = [("Lasso Regression", linear_model.Lasso(alpha = 0.05)),
+               ("Gaussian Processes", gaussian_process.GaussianProcess(theta0=1e-2))]
 
     [_, y_benchmark, num_benchmarks] =  preprocess(file, normalize_data, BENCHMARK_LABEL_FIELD)
     [X_throughput_combined, y_throughput_combined, num_throughputs] = preprocess(file, normalize_data, THROUGHPUT_LABEL_FIELD)
