@@ -1,0 +1,71 @@
+
+\section{Common Stuff}
+\label{sec:common}
+
+Refer a paper \citep{Lamport86} or a misc article \citep{lcommon}.\\
+
+Here's a table \cref{tab:tcommon}.\\
+
+\begin{table}
+\centering
+\small{
+  \centering
+  \begin{tabular}{rl} \toprule
+   {A}& B  \\  
+   \cmidrule(lr){1-2}
+   a1  & b1  \\ 
+   \midrule
+   a2  & b2 \\
+   \bottomrule
+   \end{tabular}
+ }
+%\nocaptionrule
+\caption{Generic caption.}
+\label{tab:tcommon}
+\end{table}
+
+A multi-column table is show in \Cref{tab:tcommon2}.\\
+
+\begin{table}
+  \centering
+  \begin{tabular}{lcccc}
+    \toprule
+    Id & \multicolumn{4}{c}{Big column} \\
+      \cmidrule(lr){2-3} \cmidrule(lr){4-5} 
+             & A1   &  A2    & B1 & B2  \\ 
+      \midrule                       
+      row1   & a1   &  a2    & b1 & b2  \\
+ \bottomrule
+\end{tabular}
+%  \nocaptionrule
+\caption{Results from tool \Tool}
+\label{tab:tcommon2}
+\end{table}
+
+
+Source code is shown in \Cref{fig:codecommon}.
+
+\lstset{basicstyle=\ttfamily\fontsize{9}{10}\selectfont,
+   morekeywords={if,else,end}, numbers=left} 
+\begin{figure}
+\subfloat[\label{fig:codecommon1}]{\parbox[t]{0.22\textwidth}{\lstinputlisting{figure/tmp1.c}}} %
+\subfloat[\label{fig:codecommon2}]{\parbox[t]{0.22\textwidth}{\lstinputlisting{figure/tmp2.c}}}
+\caption{Code caption.}
+\label{fig:codecommon}
+\end{figure}
+
+An equation is shown in \Cref{eqn:ecommon}.
+
+\begin{equation}    
+\mathrm{x = \frac{\displaystyle |y|}{\displaystyle |z|}}
+\label{eqn:ecommon}
+\end{equation}
+
+A figure is shown in \Cref{fig:fcommon}.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.3\textwidth]{figure/giraffe.jpg}
+  \caption{A picture.}
+  \label{fig:fcommon} 
+\end{figure}

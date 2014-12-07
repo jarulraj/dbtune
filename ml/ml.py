@@ -315,7 +315,7 @@ def gp_estimator(X, y):
     print(y_pred)
     print(r2_score(y_test, y_pred))
 
-    train_scores, test_scores = validation_curve(clf, X, y, param_name = "theta0", param_range =  np.logspace(-3, 3, 6), scoring="r2")   
+    train_scores, test_scores = validation_curve(clf, X, y, param_name = "theta0", param_range =  np.logspace(-5, 3, 8), scoring="r2")   
 
     pprint.pprint(train_scores)
     pprint.pprint(test_scores)

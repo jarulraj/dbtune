@@ -1,0 +1,130 @@
+\RequirePackage[abort, l2tabu, orthodox]{nag}
+\documentclass[pageno]{jpaper}
+
+% standard LaTeX packages that do not interfere with hyperref
+\usepackage{alltt}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage[draft]{fixme}
+\usepackage{epstopdf}
+\usepackage{flushend}
+\usepackage{graphicx}
+\usepackage[final]{listings}
+\usepackage[sort&compress]{natbib}
+\usepackage{tikz}
+\usepackage[normalem]{ulem}
+\usepackage{xspace}
+
+% font selection
+\usepackage{courier}
+\usepackage{helvet}
+\usepackage{mathptmx}
+\usepackage{microtype}
+\usepackage[mathscr]{euscript}
+
+% hyperref itself
+\usepackage{hyperref}
+
+% standard packages that must be loaded after hyperref
+\usepackage{bookmark}
+\usepackage{verbatim}
+
+% should be loaded after listings and subfig
+\usepackage{cleveref}
+\usepackage{multirow}
+\usepackage{xfrac}
+
+% custom packages for this paper
+\usepackage{xcolor}
+
+%\DeclareCaptionType{copyrightbox}
+
+\renewcommand{\cite}[1]{%
+  \PackageError{natbib}{%
+    The \string\cite\space{} command is ambiguous; use
+    \string\citet\space{} or \string\citep\space{} instead}{}}
+
+\renewcommand{\autoref}[1]{%
+  \PackageError{cleveref}{%
+    Do not use \string\autoref.  Use \string\cref instead, or use
+    \string\crefrange for ranges of referenced items}}
+
+\renewcommand{\hline}[1]{%
+  \PackageError{booktabs}{%
+    Do not use \string\hline.  Use \string\toprule, \string\midrule,
+    or \string\bottomrule\space instead depending on where in the
+    table the line appears}}
+
+\newcommand{\email}[1]{\href{mailto:#1@cs.cmu.edu}{#1}}
+
+% cleveref configuration
+\crefname{figure}{Figure}{Figures}
+\crefname{section}{Section}{Sections}
+\crefname{table}{Table}{Tables}
+
+\hyphenation{test-case}
+
+% lst configuration
+\lstdefinelanguage{example}{%
+  morekeywords={xyz},
+}
+
+\lstset{
+  basicstyle=\sffamily,
+  columns=fullflexible,
+  numbersep=5pt,
+  numberstyle=\scriptsize,
+  showstringspaces=false,
+  language=example,
+  escapeinside={/*@}{@*/},
+  belowcaptionskip=1\baselineskip,
+  language=C,
+  showstringspaces=false,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+}
+
+
+\urlstyle{sf}
+
+\pdfpagewidth=8.5in
+\pdfpageheight=11in
+
+
+% Custom commands
+\newcommand{\Tool}{\textsc{XYZ}\xspace}
+
+%\sloppy
+% start doc
+\begin{document}
+
+\title{
+  \textsc{\LARGE Midway Report\\
+  \Large Automatic Tuning of DBMS using Machine Learning\\
+  \large CMU 10-701: Machine Learning (Fall 2014)}
+}
+
+\author{Joy Arulraj \hspace{0.1 in} Ram Raghunathan \hspace{0.1 in} \\
+{\{\email{jarulraj}, \email{rraghuna}\}}}
+
+\date{}
+\maketitle
+
+\input{section/abstract}
+\input{section/introduction}
+%\input{section/motivation}
+%\input{section/data_set}
+\input{section/data_set_generation}
+\input{section/feature_extraction}
+\input{section/evaluation}
+%\input{section/tm}
+%\input{section/pessimistic}
+%\input{section/plan}
+%\input{section/evaluation}
+
+\bibliographystyle{plain}
+\bibliography{ref}
+
+\end{document}
+% end doc

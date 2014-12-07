@@ -1,0 +1,54 @@
+\section{Evaluation} \label{sec:eval}
+
+We use the ``scikit-learn'' \citep{scikit-learn} package for Python
+as our framework for evaluating different machine learning algorithms. 
+In exploring the best way to map workloads onto benchmarks, we evaluated both
+clustering algorithms as well as SVM. The rest of this section discusses the results we
+observed with each method.
+
+Clustering was our first approach as an unsupervised algorithm seemed
+to best fit the data at hand. As such, we tried the following methods,
+all of which are inbuilt in scikit-learn:\\
+
+\begin{itemize}
+\item K-Means
+\item Affinity Propagation
+\item Mean-Shift
+\item Ward Agglomerative Clustering
+\item DBSCAN
+\end{itemize}
+
+The clusters found by each algorithm can be seen in
+\cref{fig:clusters}. We also calculated common clustering metrics such
+as homogeneity, completeness, and V-measure. These results can be
+found in \cref{fig:clustering-metrics}. From the results, we notice
+immediately that DBSCAN does not work well with our data. Indeed, it
+does not find any distinct clusters at all. However, K-Means and Ward
+Agglomerative Clustering algorithms perform well. 
+Both of these algorithms require number of clusters as a 
+parameter. 
+However, this is not a restriction for our problem as we
+know the number of benchmarks - and hence the number of clusters -
+that we have.
+
+In addition to evaluating clustering algorithms, we also evaluated
+Support Vector Machines, a supervised classifier. While real-world
+data will not be labeled and hence a supervised classifier cannot be
+used, it is still useful to see how effective our features are in
+discriminating between benchmarks. Using a simple two-fold
+cross-validation, we found that a simple SVM with an RBF kernel
+achieved 86\% precision but with a very high standard deviation of
+28\%. However, this is still a very strong result as it indicates that
+our features effectively separate our data into our desired
+classes. 
+We plan to validate the classifier on more sophisticated heterogeneous 
+real-world workloads as part of our stretch goal.
+
+The immediate next step is to build an estimator that allows us to address the
+second goal of this project. We already have the infrastructure required
+for collecting metrics and features required for solving this problem.
+We plan to explore different machine learning algorithms to solve this
+problem in the coming weeks.
+ 
+
+
