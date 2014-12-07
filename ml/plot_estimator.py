@@ -52,12 +52,6 @@ LOG.setLevel(logging.INFO)
 
 # # CONFIGURATION
 BASE_DIR = os.path.dirname(__file__)
-
-BENCHMARK_FIELD = 0
-LABEL_FIELD = 0
-BENCHMARK_LABEL_FIELD = LABEL_FIELD
-THROUGHPUT_LABEL_FIELD = 1
-LATENCY_LABEL_FIELD=4
 NUM_FOLDS = 5
 
 GRAPH_DIR = './graphs/'
@@ -79,31 +73,33 @@ TICK_FONT_SIZE = 18
 LABEL_FP = FontProperties(family=OPT_FONT_NAME, style='normal', size=LABEL_FONT_SIZE, weight='bold')
 TICK_FP = FontProperties(family=OPT_FONT_NAME, style='normal', size=TICK_FONT_SIZE)
 
+BENCHMARK_LABEL_FIELD = "AA_Benchmark"
+THROUGHPUT_LABEL_FIELD = "AA_Throughput"
+LATENCY_AVG_LABEL_FIELD = "Latency_avg"
+NUM_FOLDS = 5
 
-feature_list = []
-feature_name_only_list = []
+index_to_feature_map = []
 benchmark_list = []
 
 # Get info
 def get_info(feature_info):
     # FEATURE LIST
     if feature_info:
-        print(feature_list)
+        print("Index to Feature Map in X:")
+        for index, feature in enumerate(index_to_feature_map):
+            print("  {0:>3} : {1}".format(index, feature))
 
     # BENCHMARK LIST
     print(benchmark_list)
 
-
 # Preprocess feature data
-def preprocess(filename, normalize_data, label_field, discard_latency):
+def preprocess(filename, normalize_data, label_field, features_to_discard):
     X = np.array([])
     y = np.array([])
     num_features = None
-    already_reshaped = False
-    global feature_list
+    feature_to_index_map = {}
+    global index_to_feature_map
     global benchmark_list
-
-    print("LABEL FIELD : " + str(label_field))
 
     with open(filename, "rb") as inputfile:
         text_feature_map = {}
@@ -115,25 +111,25 @@ def preprocess(filename, normalize_data, label_field, discard_latency):
             length = len(rawdata_i)
 
             if i == 0:
-                num_features = length - 1
+                num_features = length
                 f_list = rawdata_i
 
-                if num_features < 1:
+                if num_features < 2:
                     sys.exit("Need at least one feature and exactly one label!")
 
                 print("Detected " + str(num_features) + " features")
                 X = X.reshape(0, num_features)
 
                 for index, item in enumerate(f_list):
-                    feature_list.append((index, item))
-                    feature_name_only_list.append(item)
+                    feature_to_index_map[item] = index
+                    index_to_feature_map.append(item)
 
                 continue
 
             # Check row length
-            if length != (num_features + 1):
+            if length != (num_features):
                 sys.exit("Row " + str(i + 1) + " has " + str(length) + " elements! Expected " +
-                         str(num_features + 1) + " elements")
+                         str(num_features) + " elements")
 
             # Convert row to numbers
             converted_row = np.array([])
@@ -163,14 +159,25 @@ def preprocess(filename, normalize_data, label_field, discard_latency):
 
                 converted_row = np.append(converted_row, [ converted_value ])
 
-            if discard_latency:
-                converted_row = np.append(np.append(converted_row[:4], [ converted_row[9] ]), converted_row[13:])
-                if not already_reshaped:
-                    X = X.reshape(0, converted_row.shape[0] - 1)
-                    already_reshaped = True
+            # append converted row to X
+            X = np.vstack((X, converted_row))
 
-            X = np.concatenate( (X, [ np.append(converted_row[:label_field], converted_row[label_field + 1:]) ]))
-            y = np.append(y, [ converted_row[label_field] ])
+    # extract labels
+    y = X[:, feature_to_index_map[label_field]]
+    print("Label field is \"{0}\", at index {1}".format(label_field, feature_to_index_map[label_field]))
+
+    # Discard features and labels from X
+    print("Discarding {0} from features".format(features_to_discard))
+    features_to_discard.append(label_field)
+    indices_to_keep = filter(lambda index: not index_to_feature_map[index] in features_to_discard,
+                             range(X.shape[1]))
+    X = X[:, indices_to_keep]
+
+    # Update index_to_feature_map
+    new_index_to_feature_map = []
+    for index in indices_to_keep:
+        new_index_to_feature_map.append(index_to_feature_map[index])
+    index_to_feature_map = new_index_to_feature_map
 
     # Normalize features
     if normalize_data:
@@ -183,7 +190,7 @@ def preprocess(filename, normalize_data, label_field, discard_latency):
     num_labels = len(y_counter.keys())
 
     # BENCHMARK LIST
-    benchmark_list = text_feature_map[BENCHMARK_FIELD]
+    benchmark_list = text_feature_map[feature_to_index_map[BENCHMARK_LABEL_FIELD]]
     benchmark_list = sorted(benchmark_list.items(), key=lambda x:x[1])
 
     print("Detected " + str(num_labels) + " labels")
@@ -217,7 +224,7 @@ def make_gaussian_measurement(theta0, color, label):
             'label': label}
 
 def estimate_performance(file, label_field, title_format, file_suffix):
-    [X, y, num_labels] = preprocess(file, normalize_data, label_field, label_field == LATENCY_LABEL_FIELD)
+    [X, y, num_labels] = preprocess(file, normalize_data, label_field, label_field == LATENCY_AVG_LABEL_FIELD)
     num_samples_list = [10, 50, 100, 250, 500, 1000]
 
     print("===========================================================================")
@@ -310,6 +317,75 @@ def estimate_performance(file, label_field, title_format, file_suffix):
 
     plt.savefig(GRAPH_DIR + "gp_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
 
+def per_benchmark_gp(file, label_field, title_format, file_suffix, features_to_discard):
+    clf = gaussian_process.GaussianProcess(theta0=1e-2, corr='absolute_exponential', regr='constant')
+
+    [_, y_benchmark_all, num_benchmarks] =  preprocess(file, normalize_data, BENCHMARK_LABEL_FIELD, features_to_discard)
+    [X_all, y_all, _] = preprocess(file, normalize_data, label_field, features_to_discard)
+    num_samples_list = range(100, 1100, 100)
+
+    r2_scores_median = []
+    r2_scores_stddev = []
+    explained_variances_median = []
+    explained_variances_stddev = []
+    for num_samples in num_samples_list:
+        print("##################################")
+        print("Running for {0} samples".format(num_samples))
+        print("##################################")
+        r2_scores = []
+        explained_variances = []
+        X = X_all[:num_samples, :]
+        y = y_all[:num_samples]
+        y_benchmark = y_benchmark_all[:num_samples]
+        for benchmark_number in range(num_benchmarks):
+            sample_filter = y_benchmark == benchmark_number
+            X_filtered = X[sample_filter, :]
+            y_filtered = y[sample_filter]
+
+            print("-----------------------")
+            print("Estimating for benchmark {0} with {1} samples".format(benchmark_list[benchmark_number][0],
+                                                                         X_filtered.shape[0]))
+            print("-----------------------")
+
+            [X_train, y_train, X_test, y_test] = split_data(X_filtered, y_filtered, 2)
+            clf.fit(X_train, y_train)
+            y_pred = clf.predict(X_test)
+
+            np.set_printoptions(suppress=True)
+            #print(y_test[:20])
+            #print(y_pred[:20])
+
+            print("Estimator got R2 Score %f" % r2_score(y_test, y_pred))
+            print("Estimator got Explained Variance %f" % explained_variance_score(y_test, y_pred))
+
+            r2_scores.append(r2_score(y_test, y_pred))
+            explained_variances.append(explained_variance_score(y_test, y_pred))
+
+        r2_scores_median.append(np.median(r2_scores))
+        r2_scores_stddev.append(np.std(r2_scores))
+        explained_variances_median.append(np.median(explained_variances))
+        explained_variances_stddev.append(np.std(explained_variances))
+
+    plt.figure()
+    plt.xlabel("Number of Samples", fontproperties=LABEL_FP)
+    plt.ylabel("R-Squared Score", fontproperties=LABEL_FP)
+    plt.errorbar(num_samples_list, r2_scores_median, yerr=r2_scores_stddev, color=OPT_COLORS[0], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
+    plt.xlim(0, 1100)
+    plt.ylim(-1.5, 1.5)
+    plt.xticks(fontproperties=TICK_FP)
+    plt.yticks(fontproperties=TICK_FP)
+    plt.savefig(GRAPH_DIR + "gp_per_benchmark_r2_scores_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
+
+    plt.figure()
+    plt.xlabel("Number of Samples", fontproperties=LABEL_FP)
+    plt.ylabel("Explained Variance", fontproperties=LABEL_FP)
+    plt.errorbar(num_samples_list, explained_variances_median, yerr=explained_variances_stddev, color=OPT_COLORS[0], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
+    plt.xlim(0, 1100)
+    plt.ylim(-1.5, 1.5)
+    plt.xticks(fontproperties=TICK_FP)
+    plt.yticks(fontproperties=TICK_FP)
+    plt.savefig(GRAPH_DIR + "gp_per_benchmark_explained_variances_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
+
 ## ==============================================
 # # main
 ## ==============================================
@@ -322,11 +398,23 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     normalize_data = True
-    label_field = LABEL_FIELD
-
     suffix = ""
     if args.mutate:
         suffix = "_mutate"
 
-    estimate_performance(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "throughput" + suffix)
-    estimate_performance(args.file, LATENCY_LABEL_FIELD, "Using {0} to Estimate Latency", "latency" + suffix)
+    features_to_discard = ["AA_Throughput",
+                           "Latency_25th",
+                           "Latency_75th",
+                           "Latency_90th",
+                           "Latency_95th",
+                           "Latency_99th",
+                           "Latency_avg",
+                           "Latency_max",
+                           "Latency_median",
+                           "Latency_min",
+                           "Scalefactor",
+                           "Isolation",
+                           "Terminals"]
+
+    per_benchmark_gp(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "throughput" + suffix, features_to_discard)
+    per_benchmark_gp(args.file, LATENCY_AVG_LABEL_FIELD, "Using {0} to Estimate Latency", "latency" + suffix, features_to_discard)
