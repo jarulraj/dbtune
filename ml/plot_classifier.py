@@ -38,8 +38,10 @@ LOG.setLevel(logging.INFO)
 # # CONFIGURATION
 BASE_DIR = os.path.dirname(__file__)
 
-DTREE_MAX_DEPTHS = [2, 4, 8, 16, 32, 64]
-DTREE_MAX_LEAVES = [2, 4, 8, 16, 32, 64]
+BENCHMARK_LABEL_FIELD = "AA_Benchmark"
+
+DTREE_MAX_DEPTHS = [2, 4, 8, 16, 32]
+DTREE_MAX_LEAVES = [2, 4, 8, 16, 32]
 
 GRAPH_DIR = './graphs/'
 LABEL_FIELD = 0
@@ -55,8 +57,8 @@ OPT_GRAPH_WIDTH = 400
 
 # SET FONT
 
-LABEL_FONT_SIZE = 20
-TICK_FONT_SIZE = 18
+LABEL_FONT_SIZE = 18
+TICK_FONT_SIZE = 14
 
 LABEL_FP = FontProperties(family=OPT_FONT_NAME, style='normal', size=LABEL_FONT_SIZE, weight='bold')
 TICK_FP = FontProperties(family=OPT_FONT_NAME, style='normal', size=TICK_FONT_SIZE)
@@ -99,11 +101,13 @@ def run_classifier(X, y, mode, mutate):
         
     plt.plot(params, precision_list, color=OPT_COLORS[2], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
     plt.plot(params, recall_list, color=OPT_COLORS[0], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)    
-    plt.legend(['Precision', 'Recall'], loc='upper left', fontsize='x-large')
+    plt.legend(['Precision', 'Recall'], loc='lower right', fontsize='x-large')
 
     plt.xlabel(axis_name, fontproperties=LABEL_FP)
     plt.ylabel("Score", fontproperties=LABEL_FP)
-    #plt.xlim(1.8,8.2)
+    plt.xscale('log', basex=2)
+    
+    plt.xlim(1.74,36.7)
     plt.ylim(0.0,1.0)
     plt.xticks(fontproperties=TICK_FP)
     plt.yticks(fontproperties=TICK_FP)
@@ -123,10 +127,25 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     normalize_data = False
-    label_field = LABEL_FIELD
+    label_field = BENCHMARK_LABEL_FIELD
+
+    features_to_discard = ["AA_Throughput",
+                           "Latency_25th",
+                           "Latency_75th",
+                           "Latency_90th",
+                           "Latency_95th",
+                           "Latency_99th",
+                           "Latency_avg",
+                           "Latency_max",
+                           "Latency_median",
+                           "Latency_min",
+                           "Scalefactor",
+                           "Isolation",
+                           "Terminals",
+                           "Timestamp"]
         
     if args.file:
-        [X, y, num_labels] = preprocess(args.file, normalize_data, label_field)
+        [X, y, num_labels] = preprocess(args.file, normalize_data, label_field, features_to_discard)
 
     run_classifier(X, y, 0, args.mutate)
     run_classifier(X, y, 1, args.mutate)

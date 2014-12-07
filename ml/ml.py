@@ -420,7 +420,8 @@ if __name__ == '__main__':
                            "Latency_min",
                            "Scalefactor",
                            "Isolation",
-                           "Terminals"]
+                           "Terminals",
+                           "Timestamp"]
 
     if args.estimate_performance:
         # shortcut preprocess() below since estimate_performance() does it itself
@@ -449,7 +450,7 @@ if __name__ == '__main__':
         svm_classifier(X, y)
 
     if args.decision_tree:
-        decision_tree_classifier(X, y, None, None, "tree.pdf")
+        decision_tree_classifier(X, y, 7, None, "tree.pdf")
 
     # ESTIMATORS
 
