@@ -79,7 +79,7 @@ LATENCY_AVG_LABEL_FIELD = "Latency_avg"
 NUM_FOLDS = 5
 
 index_to_feature_map = []
-benchmark_list = []
+index_to_benchmark_map = []
 
 # Get info
 def get_info(feature_info):
@@ -90,7 +90,9 @@ def get_info(feature_info):
             print("  {0:>3} : {1}".format(index, feature))
 
     # BENCHMARK LIST
-    print(benchmark_list)
+    print("Index to Benchmake Map")
+    for index, benchmark in enumerate(index_to_benchmark_map):
+            print("  {0:>3} : {1}".format(index, benchmark))
 
 # Preprocess feature data
 def preprocess(filename, normalize_data, label_field, features_to_discard):
@@ -99,7 +101,7 @@ def preprocess(filename, normalize_data, label_field, features_to_discard):
     num_features = None
     feature_to_index_map = {}
     global index_to_feature_map
-    global benchmark_list
+    global index_to_benchmark_map
 
     with open(filename, "rb") as inputfile:
         text_feature_map = {}
@@ -192,6 +194,10 @@ def preprocess(filename, normalize_data, label_field, features_to_discard):
     # BENCHMARK LIST
     benchmark_list = text_feature_map[feature_to_index_map[BENCHMARK_LABEL_FIELD]]
     benchmark_list = sorted(benchmark_list.items(), key=lambda x:x[1])
+    for _ in benchmark_list:
+        index_to_benchmark_map.append("")
+    for benchmark, index in benchmark_list:
+        index_to_benchmark_map[index] = benchmark
 
     print("Detected " + str(num_labels) + " labels")
     inputfile.close()
@@ -262,16 +268,13 @@ def estimate_performance(file, label_field, title_format, file_suffix):
     plt.ylabel("R-Squared Score", fontproperties=LABEL_FP)
     for idx, measurement in enumerate(measurements):
         plt.plot(measurement['x'], measurement['y'], label=measurement['label'], color=OPT_COLORS[idx], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
-
     plt.legend(loc='lower right', fontsize='x-large')
-
     plt.xticks(fontproperties=TICK_FP)
     plt.yticks(fontproperties=TICK_FP)
-
     #plt.xlim(1.8,8.2)
     #plt.ylim(0.0,1.0)
-
     plt.savefig(GRAPH_DIR + "lasso_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
+    plt.close()
 
     print("===========================================================================")
     print("Using Gaussian Processes")
@@ -308,21 +311,19 @@ def estimate_performance(file, label_field, title_format, file_suffix):
     for idx, measurement in enumerate(measurements):
         plt.plot(measurement['x'], measurement['y'], label=measurement['label'], color=OPT_COLORS[idx], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
     plt.legend(loc='lower right', fontsize='x-large')
-
     #plt.xlim(1.8,8.2)
     #plt.ylim(0.0,1.0)
-
     plt.xticks(fontproperties=TICK_FP)
     plt.yticks(fontproperties=TICK_FP)
-
     plt.savefig(GRAPH_DIR + "gp_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
+    plt.close()
 
-def per_benchmark_gp(file, label_field, title_format, file_suffix, features_to_discard):
+def per_benchmark_gp(file, label_field, title_format, hist_x_label, hist_range, num_bins, hist_ylim, file_suffix, features_to_discard):
     clf = gaussian_process.GaussianProcess(theta0=1e-2, corr='absolute_exponential', regr='constant')
 
     [_, y_benchmark_all, num_benchmarks] =  preprocess(file, normalize_data, BENCHMARK_LABEL_FIELD, features_to_discard)
     [X_all, y_all, _] = preprocess(file, normalize_data, label_field, features_to_discard)
-    num_samples_list = range(100, 1100, 100)
+    num_samples_list = range(500, 1100, 100)
 
     r2_scores_median = []
     r2_scores_stddev = []
@@ -343,7 +344,7 @@ def per_benchmark_gp(file, label_field, title_format, file_suffix, features_to_d
             y_filtered = y[sample_filter]
 
             print("-----------------------")
-            print("Estimating for benchmark {0} with {1} samples".format(benchmark_list[benchmark_number][0],
+            print("Estimating for benchmark {0} with {1} samples".format(index_to_benchmark_map[benchmark_number],
                                                                          X_filtered.shape[0]))
             print("-----------------------")
 
@@ -361,30 +362,79 @@ def per_benchmark_gp(file, label_field, title_format, file_suffix, features_to_d
             r2_scores.append(r2_score(y_test, y_pred))
             explained_variances.append(explained_variance_score(y_test, y_pred))
 
+        row_format = "{:>15} " * num_benchmarks
+        print(row_format.format(*index_to_benchmark_map))
+        print(row_format.format(*r2_scores))
+
         r2_scores_median.append(np.median(r2_scores))
         r2_scores_stddev.append(np.std(r2_scores))
         explained_variances_median.append(np.median(explained_variances))
         explained_variances_stddev.append(np.std(explained_variances))
 
+    for benchmark_number in range(num_benchmarks):
+        sample_filter = y_benchmark == benchmark_number
+        X_filtered = X[sample_filter, :]
+        y_filtered = y[sample_filter]
+
+        print("##################################")
+        print("Plotting histogram for benchmark {0} with {1} samples".format(
+            index_to_benchmark_map[benchmark_number],
+            X_filtered.shape[0]))
+        print("##################################")
+
+        [X_train, y_train, X_test, y_test] = split_data(X_filtered, y_filtered, 2)
+        clf.fit(X_train, y_train)
+        y_pred = clf.predict(X_test)
+
+        np.set_printoptions(suppress=True)
+        #print(y_test[:20])
+        #print(y_pred[:20])
+
+        plt.figure()
+        plt.xlabel(hist_x_label, fontproperties=LABEL_FP)
+        plt.ylabel("Number of Samples", fontproperties=LABEL_FP)
+        plt.hist(y_test, range=hist_range, bins=num_bins)
+        plt.ylim(hist_ylim)
+        plt.savefig(GRAPH_DIR + "{0}_test_hist_{1}.pdf".format(index_to_benchmark_map[benchmark_number],
+                                                               file_suffix),
+                    format="pdf",
+                    dpi=1000)
+        plt.close()
+
+        plt.figure()
+        plt.xlabel(hist_x_label, fontproperties=LABEL_FP)
+        plt.ylabel("Number of Samples", fontproperties=LABEL_FP)
+        plt.hist(y_pred, range=hist_range, bins=num_bins)
+        plt.ylim(hist_ylim)
+        plt.savefig(GRAPH_DIR + "{0}_pred_hist_{1}.pdf".format(index_to_benchmark_map[benchmark_number],
+                                                               file_suffix),
+                    format="pdf",
+                    dpi=1000)
+        plt.close()
+
     plt.figure()
     plt.xlabel("Number of Samples", fontproperties=LABEL_FP)
     plt.ylabel("R-Squared Score", fontproperties=LABEL_FP)
-    plt.errorbar(num_samples_list, r2_scores_median, yerr=r2_scores_stddev, color=OPT_COLORS[0], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
-    plt.xlim(0, 1100)
-    plt.ylim(-1.5, 1.5)
+    #plt.errorbar(num_samples_list, r2_scores_median, yerr=r2_scores_stddev, color=OPT_COLORS[0], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
+    plt.plot(num_samples_list, r2_scores_median, color=OPT_COLORS[0], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
+    plt.fill_between(num_samples_list, np.array(r2_scores_median) - np.array(r2_scores_stddev), np.array(r2_scores_median) + np.array(r2_scores_stddev), color='#ccffcc', linewidth=OPT_LINE_WIDTH)
+    #plt.xlim(0, 1100)
+    #plt.ylim(-1.5, 1.5)
     plt.xticks(fontproperties=TICK_FP)
     plt.yticks(fontproperties=TICK_FP)
     plt.savefig(GRAPH_DIR + "gp_per_benchmark_r2_scores_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
+    plt.close()
 
     plt.figure()
     plt.xlabel("Number of Samples", fontproperties=LABEL_FP)
     plt.ylabel("Explained Variance", fontproperties=LABEL_FP)
     plt.errorbar(num_samples_list, explained_variances_median, yerr=explained_variances_stddev, color=OPT_COLORS[0], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
-    plt.xlim(0, 1100)
-    plt.ylim(-1.5, 1.5)
+    #plt.xlim(0, 1100)
+    #plt.ylim(-1.5, 1.5)
     plt.xticks(fontproperties=TICK_FP)
     plt.yticks(fontproperties=TICK_FP)
     plt.savefig(GRAPH_DIR + "gp_per_benchmark_explained_variances_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
+    plt.close()
 
 ## ==============================================
 # # main
@@ -416,5 +466,5 @@ if __name__ == '__main__':
                            "Isolation",
                            "Terminals"]
 
-    per_benchmark_gp(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "throughput" + suffix, features_to_discard)
-    per_benchmark_gp(args.file, LATENCY_AVG_LABEL_FIELD, "Using {0} to Estimate Latency", "latency" + suffix, features_to_discard)
+    per_benchmark_gp(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "Throughput (transactions/second)", (-2000, 10000), 12, (0, 175), "throughput" + suffix, features_to_discard)
+    per_benchmark_gp(args.file, LATENCY_AVG_LABEL_FIELD, "Using {0} to Estimate Latency", "Latency (milliseconds)", (-2, 10), 12, (0, 175), "latency" + suffix, features_to_discard)
