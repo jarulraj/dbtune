@@ -197,7 +197,7 @@ def clustering_classifier(X, y, num_labels):
     classifiers = [("K-Means", cluster.KMeans(n_clusters = num_labels)),
                    ("Affinity Propogation", cluster.AffinityPropagation()),
                    ("Mean-Shift", cluster.MeanShift()),
-                   ("Ward Agglomerative Clustering", cluster.AgglomerativeClustering(n_clusters = num_labels))]
+                   ("Agglomerative Clustering", cluster.AgglomerativeClustering(n_clusters = num_labels))]
 
     # Plot
     plt.figure(figsize=(30, 6.5))
