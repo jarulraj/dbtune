@@ -389,6 +389,7 @@ def per_benchmark_gp(file, label_field, title_format, hist_x_label, hist_range, 
         np.set_printoptions(suppress=True)
         #print(y_test[:20])
         #print(y_pred[:20])
+        print("Estimator got R2 Score %f" % r2_score(y_test, y_pred))
 
         plt.figure()
         plt.xlabel(hist_x_label, fontproperties=LABEL_FP)
@@ -466,5 +467,5 @@ if __name__ == '__main__':
                            "Isolation",
                            "Terminals"]
 
-    per_benchmark_gp(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "Throughput (transactions/second)", (-2000, 10000), 12, (0, 175), "throughput" + suffix, features_to_discard)
+    per_benchmark_gp(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "Throughput (transactions/second)", (-2000, 10000), 12, (0, 20), "throughput" + suffix, features_to_discard)
     per_benchmark_gp(args.file, LATENCY_AVG_LABEL_FIELD, "Using {0} to Estimate Latency", "Latency (milliseconds)", (-2, 10), 12, (0, 175), "latency" + suffix, features_to_discard)
