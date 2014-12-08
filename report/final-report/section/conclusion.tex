@@ -10,14 +10,20 @@ this information, we then use a regression estimator to estimate the
 performance of the benchmark under a given environment.
 
 Using decision trees to map the workloads, we find that we can
-effectively classify workloads using a few defining
-characteristics. For performance estimation, we trained estimators
+classify workloads using a few defining characteristics. The decision
+trees produces effectively discriminate between the different
+benchmarks and are very intuitive. For performance estimation, we trained estimators
 using Gaussian Process Regression that show very accurate estimation
 of database throughput and latency. In addition, these highly accurate
-estimators can be trained with as few as 600 samples!
+estimators can be trained with as few as 600 samples! Further analysis
+of performance estimation using Lasso Regression provided key insights
+into the features that are most influential in determining throughput
+and latency.
 
 While promising, this work only uses synthetic data generated from
 OLTPBench. We hope to continue this work using a larger dataset that
 includes mixtures of benchmarks along with real-world workloads. In
-addition, we hope to extend our research to include performance
-estimation across different hardware profiles and DBMS's.
+addition, we hope to extend our data to include performance
+estimation across different hardware profiles and DBMS's. This larger
+amount of more realistic data should help us get additional insights
+about how best to estimate performance of arbitrary database workloads.
