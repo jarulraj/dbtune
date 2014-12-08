@@ -18,6 +18,36 @@ workload mapping/classification problem in \cref{sec:classfication} and for the
 performance estimation problem in \cref{sec:estimation}. Finally, we discuss
 the conclusions and future work in \cref{sec:conclusion}.
 
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{figure/clustering.pdf}
+    \caption{Clusters found by the clustering algorithms.}
+    \label{fig:clusters}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \begin{adjustbox}{max width=\textwidth}    
+    \begin{tabular}{llllll}
+      \toprule
+      Algorithm                     & Homogeneity & Completeness & V-Measure &
+      \# of clusters & Silhouette Coefficient \\
+      \midrule
+      K-Means                       & 0.607       & 0.592        & 0.600   & 10
+      & 0.106  \\
+      Affinity-Propagation          & 0.654       & 0.317        & 0.427   & 88 
+      & 0.082  \\
+      Mean-Shift                    & 0.012       & 0.368        & 0.024   & 2
+      & 0.517 \\
+      Ward Agglomerative Clustering & 0.589       & 0.635        & 0.611   & 10 
+      & 0.097 \\
+      \bottomrule
+    \end{tabular}
+    \end{adjustbox}
+    \caption{Performance metrics of clustering algorithms.}
+    \label{fig:clustering-metrics}
+\end{figure*}
+
 \subsection{Experimental Setup}
 \label{sec:setup}
 
@@ -65,35 +95,21 @@ We added these variants to stress-test the classifiers and estimators as these
 variants can overlap with other benchmark classes along some dimensions in
 high-dimensional space. 
 
-For each DBMS run, we first generate a configuration by picking
-values for 12 key configuration parameters listed in \cref{tab:mutate}.
-We then select a random benchmark and alter the transaction mix of the
-benchmark i.e. the proportion of different types of transactions in 
-the specific benchmark. After running the benchmark for atleast more than
-1 minute, we halt the system.  We then collect the dynamic features from the
-DBMS and the benchmarking framework. We also collect the static features
-from the specific DBMS configuration. These features and metrics constitute
-one sample in the dataset.
-Each sample consists of 272 features and our dataset consists of $\sim$1000
-such samples.
-
 \begin{table*}
 \centering
-\small{
-  \centering
   \begin{adjustbox}{max width=\textwidth}
   \begin{tabular}{l|lll} 
 	\toprule
-   		Attribute name &  Attribute meaning & Default value & Mutated value set \\
+   		Feature name &  Feature meaning & Default value & Mutated value set \\
     \midrule
-    	shared\_buffers & Number of shared memory buffers used by the
-    	database server & 128 MB &  [ 4 MB, 32 MB, 128 MB, 512 MB ] \\
+    	shared\_buffers & Number of shared memory buffers used by the database
+    	server & 128 MB &  [ 4 MB, 32 MB, 128 MB, 512 MB ] \\
     	bgwrite\_delay &  Delay between rounds for the
     	background writer & 100 ms &  [ 100 ms, 1000 ms, 10000 ms ] \\
-    	wal\_level & Type of logging & minimal &  [ minimal, archive,
-    	hot\_standby, logical ] \\
+    	wal\_level & Type of logging & minimal &  [ minimal, archive, hot\_standby,
+    	logical ] \\
     	fsync & Forced synchronization to disk & on &  [ on, off ] \\
-    	synchronous\_commit & Level of synchronization & on &  [ on, off, local,
+    	synchronous\_commit & Whether transaction commit will wait for WAL records to be flushed & on &  [ on, off, local,
     	remote\_write ] \\
     	wal\_buffers & Number of disk-page buffers in shared memory for WAL & 
     	-1 &  [ -1, 4 MB, 32 MB, 128 MB ] \\
@@ -108,8 +124,20 @@ such samples.
    \bottomrule
    \end{tabular}
    \end{adjustbox}   
- }
 \caption{Configuration attributes that we mutate in each DBMS run.}
 \label{tab:mutate}
 \end{table*}
+
+
+For each DBMS run, we first generate a configuration by picking
+values for 12 key configuration parameters listed in \cref{tab:mutate}.
+We then select a random benchmark and alter the transaction mix of the
+benchmark i.e. the proportion of different types of transactions in 
+the specific benchmark. After running the benchmark for atleast more than
+1 minute, we halt the system.  We then collect the dynamic features from the
+DBMS and the benchmarking framework. We also collect the static features
+from the specific DBMS configuration. These features and metrics constitute
+one sample in the dataset.
+Each sample consists of 272 features and our dataset consists of 1000
+such samples.
 

@@ -78,31 +78,6 @@ framework.
   	DBMS driver. Overall, this gives us a nice set of features about the
   	workload. 
 
-\begin{figure*}
-    \centering
-    \includegraphics[width=\textwidth]{figure/clustering.pdf}
-    \caption{Clusters found by the clustering algorithms.}
-    \label{fig:clusters}
-\end{figure*}
-
-\begin{figure*}[h]
-    \centering
-    \begin{tabular}{c c c c}
-      \toprule
-      Algorithm                     & Homogeneity & Completeness & V-Measure \\
-      \midrule
-      K-Means                       & 1.000       & 1.000        & 1.000     \\
-      Affinity-Propagation          & 0.824       & 1.000        & 0.904     \\
-      Mean-Shift                    & 1.000       & 0.795        & 0.886     \\
-      Ward Agglomerative Clustering & 1.000       & 1.000        & 1.000     \\
-      DBSCAN                        & 0.000       & 1.000        & 0.000     \\
-      \bottomrule
-    \end{tabular}
-
-    \caption{Performance metrics of clustering algorithms.}
-    \label{fig:clustering-metrics}
-\end{figure*}
-
 After collecting all these features, we transform them to a metric space and
 normalize them to generate a feature matrix and a label matrix. This is 
 used by the classification algorithms that we describe in the next section.
