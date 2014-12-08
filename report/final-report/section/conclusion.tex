@@ -1,1 +1,23 @@
 \section{Conclusion} \label{sec:conclusion}
+
+DBMS performance tuning is a niche skill that requires much experience
+and experimentation to get correct. However, machine learning
+techniques can help automate this process by using prior knowledge to
+estimate performance without having to go through a time-consuming
+experiment. To achieve this goal, we have taken a two-step approach
+where we first use map a workload to a well-studied benchmark. Armed with
+this information, we then use a regression estimator to estimate the
+performance of the benchmark under a given environment.
+
+Using decision trees to map the workloads, we find that we can
+effectively classify workloads using a few defining
+characteristics. For performance estimation, we trained estimators
+using Gaussian Process Regression that show very accurate estimation
+of database throughput and latency. In addition, these highly accurate
+estimators can be trained with as few as 600 samples!
+
+While promising, this work only uses synthetic data generated from
+OLTPBench. We hope to continue this work using a larger dataset that
+includes mixtures of benchmarks along with real-world workloads. In
+addition, we hope to extend our research to include performance
+estimation across different hardware profiles and DBMS's.

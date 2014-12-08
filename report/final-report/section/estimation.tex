@@ -105,35 +105,63 @@ We chose to use Gaussian Process Regression, a supervised learning
 method, for this task as it works well for estimating regressions with
 no prior knowledge about distribution. It also gives a probabilistic
 estimation, allowing for further insight about bounds and probability
-of exceeding them. The Gaussian Process Regression models the data as
-a function with a Gaussian noise parameter:
+of exceeding them. The Gaussian Process Regression models the data
+with the function
 \begin{equation*}
-G(X) = f(X)^T\beta + Z(X)
+G(X) = f(X)^{\textrm{T}}\beta + Z(X)
 \end{equation*}
-In this model, we try to predict
-$\hat{G}(X) = G(X|\textrm{training data})$. We find that
-$\hat{G}(X) = a(X)^Ty$, where $a(X)$ is the multiplication of the
-weights with the feature values. From this model, we can find the
-optimal Gaussian Process regressor by solving the optimization problem
+where $f(X)^{\textrm{T}}\beta$ is a linear regression model and $Z(X)$
+is a Gaussian process with zero mean. $X$ is the input, represented as
+a vector of feature values.  In this model, we try to find the ``best
+linear unbiased prediction'' (BLUP) of the process given the training
+data. That is, we try to find the best function for
+$\hat{G}(X) = G(X|\textrm{training data})$. Under the model, it can be
+shown that $\hat{G}(X) = a(X)^{\textrm{T}}y$ where $a(X)$ is the
+product of the weights with the feature values. From this model, we
+can find the we can find the BLUP by solving the optimization problem
 \begin{equation*}
 a(X)^* = \arg \min\limits_{a(X)} \mathbb{E}[(G(X) - a(X)^T y)^2]
 \end{equation*}
 subject to the constraint $\mathbb{E}[G(X) - a(X)^T y] = 0$
 
-\cref{fig:gp_r2_latency} and \cref{fig:gp_r2_throughput} show the
-median $\textrm{R}^2$ score across the estimators for all benchmarks
-as a red line. The shaded green region indicates a single standard
-deviation spread. We infer from the figures that we can achieve a very
-good estimation with as few as 600 samples. In addition, the the
-estimators become collectively better as more data is provided, as
-evidenced by the shrinking green region as number of samples
-increases. Indeed, \cref{fig:actual_latency_wikipedia} and
-\cref{fig:predicted_latency_wikipedia} clearly show the accuracy of
-the latency estimator for the Wikipedia benchmark. Even the worst
-estimator, the throughput estimator for the balanced YCSB benchmark
-shown in \cref{fig:actual_latency_ycsb_balanced} and
-\cref{fig:predicted_latency_ycsb_balanced}, correctly predicts the
-throughput for a majority of the test cases.
+One way to measure the performance of a regression model is the
+$\textrm{R}^2$ score. This score is proportional to the ratio of the
+likelihood of the observed data to the variance of the data. The
+highest score is 1 and it indicates that the model explains the
+observations very well compared to the mean of the model. Lower values
+can indicate that the model does not fit the observed data as well and
+that the mean is a better predictor - that is, the model does not seem
+to fit the distribution that the observed values come
+from. \cref{fig:gp_r2_latency} and \cref{fig:gp_r2_throughput} show
+the median $\textrm{R}^2$ score across the estimators for all
+benchmarks as a red line. The shaded green region indicates a single
+standard deviation spread. We infer from the figures that we can
+achieve a very good estimation with as few as 600 samples. In
+addition, the estimators become collectively better as more data is
+provided, as evidenced by the shrinking green region as number of
+samples increases.
+
+One example of a good performance estimator is the latency estimator
+for the Wikipedia benchmark. This estimator has a high $\textrm{R}^2$
+score of 0.9734. Looking at the actual and predicted latency values in
+\cref{fig:actual_latency_wikipedia} and
+\cref{fig:predicted_latency_wikipedia} respectively, we find that the
+predicted distribution mimics the actual one very closely, with only a
+slight dip into negative latency predictions. We believe this
+estimator can be even stronger if we encode constraints for possible
+predictions, such as positive values only.
+
+One example of a poorer performance estimator is the throughput
+estimator for the balanced YCSB benchmark. This estimator has a lower
+$\textrm{R}^2$ score of 0.7090. Looking at the actual and predicted
+throughput values in \cref{fig:actual_latency_ycsb_balanced} and
+\cref{fig:predicted_latency_ycsb_balanced} respectively, we see that
+the estimator fails to handle the holes in throughput seen in the
+actual values. We believe these isolated throughput values are due to
+environmental factors that are not reflected in the feature set such
+as load on the machine and other processes' resource usages. A more
+``global'' set of features across the whole system rather than just
+pertaining to the database may help train better estimators.
 
 To gain more insight about what parameters affected performance the
 most, we performed Lasso Regression to determine the most influential
@@ -145,7 +173,8 @@ objective function
   \min\limits_{w}
   \frac{1}{2n_{\textrm{samples}}} \|Xw - y\|_2^2 + \alpha \|w\|_1
 \end{equation*}
-which is a simple linear regression with the lasso constraint added.
+which is a simple least squares linear regression with the weighted
+lasso constraint added.
 
  These features are summarized in
 \cref{tab:influential_features_for_throughput} and
