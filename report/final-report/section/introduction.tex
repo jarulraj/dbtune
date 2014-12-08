@@ -1,10 +1,30 @@
 \section{Introduction} \label{sec:intro}
 
+\subsection{Motivation}
 
-\subsection{Questions}
+DBMS tuning is a niche skill that involves configuring the DBMS suitably for the
+underlying hardware as well as guiding the physical design of the database.
+Doing these tasks effectively requires a deep knowledge of the SQL workload to
+be run on the DBMS, extensive prior experience in DBMS tuning, as well as
+significant amounts of time-consuming experimentation with candidate
+configurations. This issue is prevalent across several widely used database
+management systems. For instance, Robert Hass, a core developer of PostgreSQL, 
+stated that \citep{hass12} :
 
-We address these two questions in this project.
-First, we plan to \textit{map} a given workload comprised of
+\begin{displayquote}
+``On one test, involving 32 concurrent clients, I found that wal\_buffers = 64
+MB doubled performance as compared with wal\_buffers = 16 MB; however, on
+another system, I found that no setting I tried produced more than a 10 \%
+improvement over the auto-tuning formula.'' 
+\end{displayquote}
+
+We therefore propose applying machine learning methods to automate the process
+of tuning the DBMS for a particular workload on a specific machine.
+
+\subsection{Problem definition}
+
+We address two problems in this project.
+First, we try to \textit{map} a given workload comprised of
 a set of SQL transactions to a standard database benchmark workload. 
 This problem is independent of the underlying DBMS or hardware configuration.
 This will allow us to use prior knowledge about the standard 
@@ -12,50 +32,35 @@ benchmark gained from previous DBMS deployments.
 
 We collect features that characterize the SQL workload as well as 
 DBMS statistics.
-It will be interesting to see if feature extraction yields insights
-about the most influential features.
-We then use unsupervised techniques like \textit{clustering} 
-for mapping the workloads.
+We then use unsupervised techniques like clustering
+and supervised techniques like decision-trees 
+for mapping the workload.
 Performance analysis of the resulting classifier is done via
 cross-validation.
 
 Second, we plan to \textit{estimate} the DBMS performance given a 
 DBMS configuration, hardware setup and SQL workload. 
-This will be done with supervised techniques like 
-\textit{Gaussian process regression}.
-As we expect a lot of features to be present in the input, we may
-need to make use of a feature extraction algorithm like
-principal component analysis (PCA) first.
-Performance analysis of the estimator will also be done using 
+This is done with supervised techniques like 
+Gaussian process regression.
+We use the lasso regression estimator to identify key features 
+that influence the throughput and average transactional latency 
+of the DBMS.
+Performance analysis of the estimator is also done using 
 cross-validation.
-We describe our progress on solving the first problem in this report.
+We describe our progress on solving these problems in this report.
 
-\subsection{Minimum goals}
-The minimum goals are : (a) to create a workload mapper that maps an arbitrary
-SQL workload to a well-known standard benchmark, and (b) to estimate the
-performance of a DBMS given a workload and configuration pair.
+The goals of this project are the following : 
+\begin{itemize}
+  	\item to create a workload mapper that maps an arbitrary SQL workload to a
+well-known standard benchmark
+	\item to estimate the performance metrics of a DBMS given a workload and
+configuration pair
+\end{itemize}
 
-We have already achieved the first goal on our dataset. We plan to
-generalize it to more sophisticated datasets as our stretch goal. 
-We have also setup the infrastructure required 
-for achieving the second goal.
-
-\subsection{Stretch goals}
-As a real-world workload can exhibit some aspects of different standard
-benchmarks or can exhibit different characteristics across time (e.g. read-mostly
-during day and write-mostly during night), mapping the entire workload onto
-a single benchmark may not be an entirely accurate characterization.
-To help characterize the workload more accurately, we will consider mapping
-parts of a workload onto different benchmarks using techniques like
-\textit{multi-label prediction}.
-
-% Can we skip this for now ?
-%Second, we can use \textit{Bayesian optimization} to find the
-%optimal configuration that can deliver highest performance given
-%information about the workload and hardware setup. We think that this is a
-%hard problem since the state space is large.
-
-In this report, we first describe how we generate the dataset in
-\cref{sec:data_set}. We then focus on the feature extraction problem
-in \cref{sec:features}.
-Finally, we sketch our initial evaluation results in \cref{sec:eval}.
+We first describe how we generate the dataset in \cref{sec:data_set}. 
+Then, we focus on the feature extraction problem in \cref{sec:features}.
+We describe our experimental setup and dataset information in
+\cref{sec:eval}. The evaluation results obtained for the classification
+problem and the estimation problem are shown in \cref{sec:classfication}
+and \cref{sec:estimation} respectively. Finally, we present the 
+conclusions of this project in \cref{sec:conclusion}.
