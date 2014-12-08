@@ -7,38 +7,38 @@ through the estimation for the benchmark it maps to. As such, we train
 two estimators for each benchmark: one for database throughput and one
 for database latency.
 
-\begin{figure*}
+\begin{figure}[h]
     \centering
     \fbox{\includegraphics[width=\linewidth]{figure/gp_per_benchmark_r2_scores_latency_mutate.pdf}}
     \caption{Per-Benchmark Gaussian Processes to Estimate Latency}
     \label{fig:gp_r2_latency}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}
+\begin{figure}[h]
     \centering
     \fbox{\includegraphics[width=\linewidth]{figure/gp_per_benchmark_r2_scores_throughput_mutate.pdf}}
     \caption{Per-Benchmark Gaussian Processes to Estimate Throughput}
     \label{fig:gp_r2_throughput}
-\end{figure*}
+\end{figure}
 
-We chose to use Gaussian Processes for this task as it works well for
-estimating regressions with no prior knowledge about distribution. It
-also gives a probabilistic estimation, allowing for further insight
-about bounds and probability of exceeding
+We chose to use Gaussian Process Regression for this task as it works
+well for estimating regressions with no prior knowledge about
+distribution. It also gives a probabilistic estimation, allowing for
+further insight about bounds and probability of exceeding
 them. \cref{fig:gp_r2_latency} and \cref{fig:gp_r2_throughput} show
 the median $\textrm{R}^2$ score across the estimators for all
 benchmarks as a red line. The shaded green region indicates a single
 standard deviation spread.
 
 We infer from the figures that we can achieve a very good estimation
-with relatively little data. In addition, the the estimators become
-better the more data provided, as evidenced by the shrinking green
-region as number of samples increases.
+with as few as 600 samples. In addition, the the estimators become
+collectively better as more data is provided, as evidenced by the
+shrinking green region as number of samples increases.
 
-\begin{table}
+\begin{table*}[t]
   \centering
-  \small{
-    \centering
+
+  \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{ll}
       \toprule
       Feature Name                   & Feature Meaning                                                     \\
@@ -71,35 +71,50 @@ region as number of samples increases.
       wal\_writer\_delay             & Specify the delay between activity rounds for the WAL writer        \\
       \bottomrule
     \end{tabular}
-  }
-  % \nocaptionrule
+  \end{adjustbox}
+
   \caption{Influential Features for Throughput Estimation}
   \label{tab:influential_features_for_throughput}
-\end{table}
+\end{table*}
 
-\begin{table}
+\begin{table*}[t]
   \centering
-  \small{
-    \centering
+  \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{ll}
       \toprule
-      Feature Name        & Feature Meaning                                                    \\
+      Feature Name          & Feature Meaning                                                    \\
       \midrule
-      AA\_Benchmark        & Benchmark Name                                                     \\
+      AA\_Benchmark         & Benchmark Name                                                     \\
       PG\_index\_scans      & Number of index scans initiated on this table                      \\
       PG\_sequential\_scans & Number of sequential scans initiated on this table                 \\
-      fsync               & Enable making sure that updates are physically written to disk     \\
-      synchronous\_commit  & Whether transaction commit will wait for WAL records to be flushed \\
+      fsync                 & Enable making sure that updates are physically written to disk     \\
+      synchronous\_commit   & Whether transaction commit will wait for WAL records to be flushed \\
       \bottomrule
     \end{tabular}
-  }
-  % \nocaptionrule
+  \end{adjustbox}
+
   \caption{Influential Features for Latency Estimation}
   \label{tab:influential_features_for_latency}
-\end{table}
+\end{table*}
 
 To gain more insight about what parameters affected performance the
 most, we performed Lasso Regression to determine the most influential
 features. These features are summarized in
 \cref{tab:influential_features_for_throughput} and
-\cref{tab:influential_features_for_latency}.
+\cref{tab:influential_features_for_latency}. Confirming general
+intuition, throughput seems to be greatly affected by all operation
+types along with options that add delays (e.g. bgwriter\_delay,
+commit\_delay) or constrain how relaxed the database can be about
+transaction execution (e.g. fsync, synchronous\_commit). However, it
+is interesting to note that latency seems primarily affected only by
+operations that take a long time to complete and not the type of
+operations or hard delays introduced into the system.
+
+In a practical implementation of our estimator, we will not be able
+to collect performance statistics before estimating performance for
+different configurations. As such, we eliminated the features
+pertaining to throughput and latency from consideration. However,
+these features are available in the training data. We believe that a
+better learner will use graphical models to infer the missing
+throughput and performance information for the test data before
+estimation. We will explore this technique in the future.
