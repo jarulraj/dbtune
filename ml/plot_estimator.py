@@ -80,6 +80,7 @@ NUM_FOLDS = 5
 
 index_to_feature_map = []
 index_to_benchmark_map = []
+benchmark_to_index_map = {}
 
 # Get info
 def get_info(feature_info):
@@ -175,7 +176,7 @@ def preprocess(filename, normalize_data, label_field, features_to_discard):
                              range(X.shape[1]))
     X = X[:, indices_to_keep]
 
-    # Update index_to_feature_map
+    # Update maps
     new_index_to_feature_map = []
     for index in indices_to_keep:
         new_index_to_feature_map.append(index_to_feature_map[index])
@@ -198,6 +199,7 @@ def preprocess(filename, normalize_data, label_field, features_to_discard):
         index_to_benchmark_map.append("")
     for benchmark, index in benchmark_list:
         index_to_benchmark_map[index] = benchmark
+        benchmark_to_index_map[benchmark] = index
 
     print("Detected " + str(num_labels) + " labels")
     inputfile.close()
@@ -229,16 +231,19 @@ def make_gaussian_measurement(theta0, color, label):
             'color': color,
             'label': label}
 
-def estimate_performance(file, label_field, title_format, file_suffix):
-    [X, y, num_labels] = preprocess(file, normalize_data, label_field, label_field == LATENCY_AVG_LABEL_FIELD)
-    num_samples_list = [10, 50, 100, 250, 500, 1000]
+def estimate_performance(file, label_field, title_format, file_suffix, features_to_discard):
+    [_, y_benchmark_all, num_benchmarks] =  preprocess(file, normalize_data, BENCHMARK_LABEL_FIELD, features_to_discard)
+    [X, y, num_labels] = preprocess(file, normalize_data, label_field, features_to_discard)
+    X = X[y_benchmark_all == benchmark_to_index_map['wikipedia'], :]
+    y = y[y_benchmark_all == benchmark_to_index_map['wikipedia']]
+    num_samples_list = [25, 50, 75, 100, 125]
 
     print("===========================================================================")
     print("Using Lasso Regression")
     print("===========================================================================")
 
     measurements = [make_lasso_measurement(1, 'k', r'$\alpha = 1$'),
-                    #make_lasso_measurement(1e-3, 'b', r'$\alpha = 0.001$'),
+                    make_lasso_measurement(1e-3, 'b', r'$\alpha = 0.001$'),
                     make_lasso_measurement(1e-1, 'g', r'$\alpha = 0.1$')]
 
 
@@ -281,7 +286,7 @@ def estimate_performance(file, label_field, title_format, file_suffix):
     print("===========================================================================")
 
     measurements = [make_gaussian_measurement(1e-1, 'k', r'$\theta_0 = 0.1$'),
-                    #make_gaussian_measurement(1e-3, 'b', r'$\theta_0 = 0.001$'),
+                    make_gaussian_measurement(1e-3, 'b', r'$\theta_0 = 0.001$'),
                     make_gaussian_measurement(1, 'g', r'$\theta_0 = 1$')]
 
     ############
@@ -466,6 +471,9 @@ if __name__ == '__main__':
                            "Scalefactor",
                            "Isolation",
                            "Terminals"]
+
+    estimate_performance(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "throughput" + suffix, features_to_discard)
+    estimate_performance(args.file, LATENCY_AVG_LABEL_FIELD, "Using {0} to Estimate Latency", "latency" + suffix, features_to_discard)
 
     per_benchmark_gp(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "Throughput (transactions/second)", (-2000, 10000), 12, (0, 20), "throughput" + suffix, features_to_discard)
     per_benchmark_gp(args.file, LATENCY_AVG_LABEL_FIELD, "Using {0} to Estimate Latency", "Latency (milliseconds)", (-2, 10), 12, (0, 175), "latency" + suffix, features_to_discard)

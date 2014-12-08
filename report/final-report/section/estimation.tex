@@ -1,46 +1,92 @@
 \section{Estimation} \label{sec:estimation}
 
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.7\linewidth]{figure/gp_per_benchmark_r2_scores_latency_mutate.pdf}
-    \caption{Per-benchmark gaussian processes to estimate latency}
-    \label{fig:gp_r2_latency}
-\end{figure}
+\begin{figure*}
+\subfloat[\label{fig:gp_r2_latency}]{\includegraphics[width=0.5\textwidth]{figure/gp_per_benchmark_r2_scores_latency_mutate.pdf}} %
+\subfloat[\label{fig:gp_r2_throughput}]{\includegraphics[width=0.5\textwidth]{figure/gp_per_benchmark_r2_scores_throughput_mutate.pdf}}
 
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.7\linewidth]{figure/gp_per_benchmark_r2_scores_throughput_mutate.pdf}
-    \caption{Per-benchmark gaussian processes to estimate throughput}
-    \label{fig:gp_r2_throughput}
-\end{figure}
+\caption{Per-benchmark gaussian processes to estimate (a) latency and
+  (b) throughput}
+\label{fig:gp_r2}
+\end{figure*}
 
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.7\linewidth]{figure/wikipedia_test_hist_latency_mutate.pdf}
-    \caption{Actual latency distribution for the Wikipedia benchmark}
-    \label{fig:actual_latency_wikipedia}
-\end{figure}
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=0.7\linewidth]{figure/gp_per_benchmark_r2_scores_latency_mutate.pdf}
+%     \caption{Per-benchmark gaussian processes to estimate latency}
+%     \label{fig:gp_r2_latency}
+% \end{figure}
 
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.7\linewidth]{figure/wikipedia_pred_hist_latency_mutate.pdf}
-    \caption{Predicted latency distribution for the Wikipedia benchmark}
-    \label{fig:predicted_latency_wikipedia}
-\end{figure}
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=0.7\linewidth]{figure/gp_per_benchmark_r2_scores_throughput_mutate.pdf}
+%     \caption{Per-benchmark gaussian processes to estimate throughput}
+%     \label{fig:gp_r2_throughput}
+% \end{figure}
 
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.7\linewidth]{figure/ycsb_balanced_test_hist_throughput_mutate.pdf}
-    \caption{Actual throughput distribution for the balanced YCSB benchmark}
-    \label{fig:actual_latency_ycsb_balanced}
-\end{figure}
+\begin{figure*}
+\subfloat[\label{fig:actual_latency_wikipedia}]{\includegraphics[width=0.5\linewidth]{figure/wikipedia_test_hist_latency_mutate.pdf}}
+\subfloat[\label{fig:predicted_latency_wikipedia}]{\includegraphics[width=0.5\linewidth]{figure/wikipedia_pred_hist_latency_mutate.pdf}}
 
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.7\linewidth]{figure/ycsb_balanced_pred_hist_throughput_mutate.pdf}
-    \caption{Predicted throughput distribution for the balanced YCSB benchmark}
-    \label{fig:predicted_latency_ycsb_balanced}
-\end{figure}
+\caption{(a) Actual and (b) predicted latency distribution for the
+  Wikipedia benchmark}
+\label{fig:latency_wikipedia}
+\end{figure*}
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=0.7\linewidth]{figure/wikipedia_test_hist_latency_mutate.pdf}
+%     \caption{Actual latency distribution for the Wikipedia benchmark}
+%     \label{fig:actual_latency_wikipedia}
+% \end{figure}
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=0.7\linewidth]{figure/wikipedia_pred_hist_latency_mutate.pdf}
+%     \caption{Predicted latency distribution for the Wikipedia benchmark}
+%     \label{fig:predicted_latency_wikipedia}
+% \end{figure}
+
+\begin{figure*}
+\subfloat[\label{fig:actual_throughput_ycsb_balanced}]{\includegraphics[width=0.5\linewidth]{figure/ycsb_balanced_test_hist_throughput_mutate.pdf}}
+\subfloat[\label{fig:predicted_throughput_ycsb_balanced}]{\includegraphics[width=0.5\linewidth]{figure/ycsb_balanced_pred_hist_throughput_mutate.pdf}}
+
+\caption{(a) Actual and (b) predicted throughput distribution for the
+  balanced YCSB benchmark}
+\label{fig:throughput_ycsb_balanced}
+\end{figure*}
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=0.7\linewidth]{figure/ycsb_balanced_test_hist_throughput_mutate.pdf}
+%     \caption{Actual throughput distribution for the balanced YCSB benchmark}
+%     \label{fig:actual_latency_ycsb_balanced}
+% \end{figure}
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=0.7\linewidth]{figure/ycsb_balanced_pred_hist_throughput_mutate.pdf}
+%     \caption{Predicted throughput distribution for the balanced YCSB benchmark}
+%     \label{fig:predicted_latency_ycsb_balanced}
+% \end{figure}
+
+\begin{figure*}
+\subfloat[\label{fig:lasso_latency_alphas}]{\includegraphics[width=0.5\linewidth]{figure/lasso_latency_mutate.pdf}}
+\subfloat[\label{fig:lasso_throughput_alphas}]{\includegraphics[width=0.5\linewidth]{figure/lasso_throughput_mutate.pdf}}
+
+\caption{Performance of Lasso for various $\alpha$ values for (a)
+  latency and (b) throughput on the Wikipedia benchmark}
+\label{fig:lasso_alphas}
+\end{figure*}
+
+\begin{figure*}
+\subfloat[\label{fig:gp_latency_theta0s}]{\includegraphics[width=0.5\linewidth]{figure/gp_latency_mutate.pdf}}
+\subfloat[\label{fig:gp_throughput_theta0s}]{\includegraphics[width=0.5\linewidth]{figure/gp_throughput_mutate.pdf}}
+
+\caption{Performance of Gaussian Process Regression with absolute
+  exponential autocorrelation for various $\theta_0$ values for (a)
+  latency and (b) throughput on the Wikipedia benchmark}
+\label{fig:gp_theta0s}
+\end{figure*}
 
 \begin{table*}[h!]
   \centering
@@ -122,17 +168,37 @@ can find the we can find the BLUP by solving the optimization problem
 \begin{equation*}
 a(X)^* = \arg \min\limits_{a(X)} \mathbb{E}[(G(X) - a(X)^T y)^2]
 \end{equation*}
-subject to the constraint $\mathbb{E}[G(X) - a(X)^T y] = 0$
+subject to the constraint $\mathbb{E}[G(X) - a(X)^T y] = 0$. Gaussian
+Processes are amenable to kernels, although they are used as
+correlations in this model. We use the absolute exponential
+autocorrelation model in our experiments. This covariance model
+calculates autocorrelation of a vector X as
+\begin{equation*}
+  \exp\left( \sum_{i = 1}^n -\theta_0 |\Delta X_i| \right)
+\end{equation*}
+where $\theta_0$ is a the autocorrelation parameter and $\Delta X$ is
+the component-wise distances at which the correlation should be
+calculated. We experimented with various values of $\theta_0$ and
+settled on $\theta_0 = 0.001$ as it exhibited the best performance, as
+seen in \cref{fig:gp_theta0s}.
 
 One way to measure the performance of a regression model is the
-$\textrm{R}^2$ score. This score is proportional to the ratio of the
-likelihood of the observed data to the variance of the data. The
-highest score is 1 and it indicates that the model explains the
-observations very well compared to the mean of the model. Lower values
-can indicate that the model does not fit the observed data as well and
-that the mean is a better predictor - that is, the model does not seem
-to fit the distribution that the observed values come
-from. \cref{fig:gp_r2_latency} and \cref{fig:gp_r2_throughput} show
+$\textrm{R}^2$ score defined as
+\begin{equation*}
+  \textrm{R}^2 \equiv 1 - \frac{\textrm{SS}_{res}}{\textrm{SS}_{tot}}
+\end{equation*}
+In this definition, $\textrm{SS}_{res} = \sum_i (y_i - f_i)^2$ where
+$y_i$ is the true value and $f_i$ is the predicted value. This term is
+also known as the residual sum of squares. The other term in the
+definition is $\textrm{SS}_{tot} = \sum_i (y_i - \bar{y})^2$ where
+$y_i$ is the true value and $\bar{y}$ is the mean of all the true
+values. This is proportional to the variance of the true values. From
+this definition of the $\textrm{R}^2$ score, we see that the maximum
+value is 1 and that it indicates that the model perfectly predicted
+the observed data. A score less than 1 indicates that the model was
+not perfect and a score of zero indicates that the model is no better
+at predicting the values than the mean of the true
+values. \cref{fig:gp_r2} shows
 the median $\textrm{R}^2$ score across the estimators for all
 benchmarks as a red line. The shaded green region indicates a single
 standard deviation spread. We infer from the figures that we can
@@ -144,8 +210,7 @@ samples increases.
 One example of a good performance estimator is the latency estimator
 for the Wikipedia benchmark. This estimator has a high $\textrm{R}^2$
 score of 0.9734. Looking at the actual and predicted latency values in
-\cref{fig:actual_latency_wikipedia} and
-\cref{fig:predicted_latency_wikipedia} respectively, we find that the
+\cref{fig:latency_wikipedia}, we find that the
 predicted distribution mimics the actual one very closely, with only a
 slight dip into negative latency predictions. We believe this
 estimator can be even stronger if we encode constraints for possible
@@ -154,8 +219,7 @@ predictions, such as positive values only.
 One example of a poorer performance estimator is the throughput
 estimator for the balanced YCSB benchmark. This estimator has a lower
 $\textrm{R}^2$ score of 0.7090. Looking at the actual and predicted
-throughput values in \cref{fig:actual_latency_ycsb_balanced} and
-\cref{fig:predicted_latency_ycsb_balanced} respectively, we see that
+throughput values in \cref{fig:throughput_ycsb_balanced}, we see that
 the estimator fails to handle the holes in throughput seen in the
 actual values. We believe these isolated throughput values are due to
 environmental factors that are not reflected in the feature set such
@@ -173,8 +237,12 @@ objective function
   \min\limits_{w}
   \frac{1}{2n_{\textrm{samples}}} \|Xw - y\|_2^2 + \alpha \|w\|_1
 \end{equation*}
-which is a simple least squares linear regression with the weighted
-lasso constraint added.
+which is a simple least squares linear regression with the lasso
+constraint added under weight $\alpha$. A higher value for $\alpha$
+encourages sparser solutions while a lower value relaxes this
+constraint. We experimented with different values of alpha and settled
+on using $\alpha = 0.001$ as it exhibited the best performance, as seen in
+\cref{fig:lasso_alphas}.
 
  These features are summarized in
 \cref{tab:influential_features_for_throughput} and
