@@ -1,24 +1,45 @@
 \section{Estimation} \label{sec:estimation}
 
-We estimate expected performance of each benchmark on a given database
-configuration for the second phase of our solution. In doing so, we
-hope to approximately estimate the performance of the target workload
-through the estimation for the benchmark it maps to. As such, we train
-two estimators for each benchmark: one for database throughput and one
-for database latency.
-
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.7\linewidth]{figure/gp_per_benchmark_r2_scores_latency_mutate.pdf}
-    \caption{Per-Benchmark Gaussian Processes to Estimate Latency}
+    \caption{Per-benchmark gaussian processes to estimate latency}
     \label{fig:gp_r2_latency}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.7\linewidth]{figure/gp_per_benchmark_r2_scores_throughput_mutate.pdf}
-    \caption{Per-Benchmark Gaussian Processes to Estimate Throughput}
+    \caption{Per-benchmark gaussian processes to estimate throughput}
     \label{fig:gp_r2_throughput}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figure/wikipedia_test_hist_latency_mutate.pdf}
+    \caption{Actual latency distribution for the Wikipedia benchmark}
+    \label{fig:actual_latency_wikipedia}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figure/wikipedia_pred_hist_latency_mutate.pdf}
+    \caption{Predicted latency distribution for the Wikipedia benchmark}
+    \label{fig:predicted_latency_wikipedia}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figure/ycsb_balanced_test_hist_throughput_mutate.pdf}
+    \caption{Actual throughput distribution for the balanced YCSB benchmark}
+    \label{fig:actual_latency_ycsb_balanced}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figure/ycsb_balanced_pred_hist_throughput_mutate.pdf}
+    \caption{Predicted throughput distribution for the balanced YCSB benchmark}
+    \label{fig:predicted_latency_ycsb_balanced}
 \end{figure}
 
 \begin{table*}[h!]
@@ -50,7 +71,7 @@ for database latency.
     \end{tabular}
   \end{adjustbox}
 
-  \caption{Some of the influential features for estimate throughput.}
+  \caption{Some of the influential features for throughput estimation.}
   \label{tab:influential_features_for_throughput}
 \end{table*}
 
@@ -73,23 +94,60 @@ for database latency.
   \label{tab:influential_features_for_latency}
 \end{table*}
 
-We chose to use Gaussian Process Regression for this task as it works
-well for estimating regressions with no prior knowledge about
-distribution. It also gives a probabilistic estimation, allowing for
-further insight about bounds and probability of exceeding
-them. \cref{fig:gp_r2_latency} and \cref{fig:gp_r2_throughput} show
-the median $\textrm{R}^2$ score across the estimators for all
-benchmarks as a red line. The shaded green region indicates a single
-standard deviation spread.
+We estimate expected performance of each benchmark on a given database
+configuration for the second phase of our solution. In doing so, we
+hope to approximately estimate the performance of the target workload
+through the estimation for the benchmark it maps to. As such, we train
+two estimators for each benchmark: one for database throughput and one
+for database latency.
 
-We infer from the figures that we can achieve a very good estimation
-with as few as 600 samples. In addition, the the estimators become
-collectively better as more data is provided, as evidenced by the
-shrinking green region as number of samples increases.
+We chose to use Gaussian Process Regression, a supervised learning
+method, for this task as it works well for estimating regressions with
+no prior knowledge about distribution. It also gives a probabilistic
+estimation, allowing for further insight about bounds and probability
+of exceeding them. The Gaussian Process Regression models the data as
+a function with a Gaussian noise parameter:
+\begin{equation*}
+G(X) = f(X)^T\beta + Z(X)
+\end{equation*}
+In this model, we try to predict
+$\hat{G}(X) = G(X|\textrm{training data})$. We find that
+$\hat{G}(X) = a(X)^Ty$, where $a(X)$ is the multiplication of the
+weights with the feature values. From this model, we can find the
+optimal Gaussian Process regressor by solving the optimization problem
+\begin{equation*}
+a(X)^* = \arg \min\limits_{a(X)} \mathbb{E}[(G(X) - a(X)^T y)^2]
+\end{equation*}
+subject to the constraint $\mathbb{E}[G(X) - a(X)^T y] = 0$
+
+\cref{fig:gp_r2_latency} and \cref{fig:gp_r2_throughput} show the
+median $\textrm{R}^2$ score across the estimators for all benchmarks
+as a red line. The shaded green region indicates a single standard
+deviation spread. We infer from the figures that we can achieve a very
+good estimation with as few as 600 samples. In addition, the the
+estimators become collectively better as more data is provided, as
+evidenced by the shrinking green region as number of samples
+increases. Indeed, \cref{fig:actual_latency_wikipedia} and
+\cref{fig:predicted_latency_wikipedia} clearly show the accuracy of
+the latency estimator for the Wikipedia benchmark. Even the worst
+estimator, the throughput estimator for the balanced YCSB benchmark
+shown in \cref{fig:actual_latency_ycsb_balanced} and
+\cref{fig:predicted_latency_ycsb_balanced}, correctly predicts the
+throughput for a majority of the test cases.
 
 To gain more insight about what parameters affected performance the
 most, we performed Lasso Regression to determine the most influential
-features. These features are summarized in
+features. Lasso regression encourages sparse coefficients in its
+solution, so it is a good method for finding the most important
+features for a particular problem. It works by optimizing the
+objective function
+\begin{equation*}
+  \min\limits_{w}
+  \frac{1}{2n_{\textrm{samples}}} \|Xw - y\|_2^2 + \alpha \|w\|_1
+\end{equation*}
+which is a simple linear regression with the lasso constraint added.
+
+ These features are summarized in
 \cref{tab:influential_features_for_throughput} and
 \cref{tab:influential_features_for_latency}. Confirming general
 intuition, throughput seems to be greatly affected by all operation
