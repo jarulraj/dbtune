@@ -55,6 +55,27 @@ around $x_i$ and the additive term is basically the mean shift vector
 computed for each centroid that points towards a region of the maximum
 increase in the density of points.\\
 
+\begin{figure*}[h!]
+    \centering
+    \fbox{\includegraphics[width=\linewidth]{figure/tree_4.pdf}}
+    \caption{Decision tree with max depth set to 4.}
+    \label{fig:tree_sample}
+\end{figure*}
+
+\begin{figure}[h!]
+    \centering
+	\includegraphics[width=0.7\linewidth]{figure/depth.pdf}
+	\caption{Impact of max depth on the accuracy of the decision tree.}
+	\label{fig:tree_depth}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+	\includegraphics[width=0.7\linewidth]{figure/leaves.pdf}
+	\caption{Impact of max leaf nodes on the accuracy of the decision tree.}
+	\label{fig:tree_leaves}
+\end{figure}
+
 \item \textbf{Agglomerative Clustering} :
 This algorithm is a type of hierarchical clustering algorithms that build nested clusters 
 by merging or splitting them successively. 
@@ -105,29 +126,20 @@ the classifier, we also experimented with SVM classifiers and decision trees.
 We finally decided to use decision trees as they met both our accuracy
 and intuition requirements.
 
-\subsection{Decision Trees}
-\label{sec:dt}
+\begin{figure*}
+\centering
+\subfloat[\label{fig:gp_r2_latency}]{\includegraphics[width=0.4\textwidth]{figure/gp_per_benchmark_r2_scores_latency_mutate.pdf}}
+%
+\subfloat[\label{fig:gp_r2_throughput}]{\includegraphics[width=0.4\textwidth]{figure/gp_per_benchmark_r2_scores_throughput_mutate.pdf}}
 
-\begin{figure*}[h!]
-    \centering
-    \fbox{\includegraphics[width=\linewidth]{figure/tree_4.pdf}}
-    \caption{Decision tree with max depth set to 4.}
-    \label{fig:tree_sample}
+\caption{Per-benchmark gaussian processes to estimate (a) latency and
+  (b) throughput}
+\label{fig:gp_r2}
 \end{figure*}
 
-\begin{figure}[h!]
-    \centering
-	\includegraphics[width=0.7\linewidth]{figure/depth.pdf}
-	\caption{Impact of max depth on the accuracy of the decision tree.}
-	\label{fig:tree_depth}
-\end{figure}
 
-\begin{figure}[h!]
-    \centering
-	\includegraphics[width=0.7\linewidth]{figure/leaves.pdf}
-	\caption{Impact of max leaf nodes on the accuracy of the decision tree.}
-	\label{fig:tree_leaves}
-\end{figure}
+\subsection{Decision Trees}
+\label{sec:dt}
 
 Decision trees are non-parametric supervised learning algorithms used for
 both classification and regression. 
@@ -189,6 +201,26 @@ and derive these interesting observations :
   does not perform any sequential scans.
 \end{itemize}
 
+\begin{figure*}
+\centering
+\subfloat[\label{fig:actual_latency_wikipedia}]{\includegraphics[width=0.4\linewidth]{figure/wikipedia_test_hist_latency_mutate.pdf}}
+\subfloat[\label{fig:predicted_latency_wikipedia}]{\includegraphics[width=0.4\linewidth]{figure/wikipedia_pred_hist_latency_mutate.pdf}}
+
+\caption{(a) Actual and (b) predicted latency distribution for the
+  Wikipedia benchmark}
+\label{fig:latency_wikipedia}
+\end{figure*}
+
+\begin{figure*}
+\centering
+\subfloat[\label{fig:actual_throughput_ycsb_balanced}]{\includegraphics[width=0.4\linewidth]{figure/ycsb_balanced_test_hist_throughput_mutate.pdf}}
+\subfloat[\label{fig:predicted_throughput_ycsb_balanced}]{\includegraphics[width=0.4\linewidth]{figure/ycsb_balanced_pred_hist_throughput_mutate.pdf}}
+
+\caption{(a) Actual and (b) predicted throughput distribution for the
+  balanced YCSB benchmark}
+\label{fig:throughput_ycsb_balanced}
+\end{figure*}
+
 
 The accuracy increases quickly to $91\%$ with a maximum depth of $8$. The impact
 of maximum tree depth on the accuracy of the decision tree classifier
@@ -201,24 +233,7 @@ We observe that these parameters affect both precision and recall
 equally. The accuracy increases more steeply with increasing tree
 depth as expected.
 
-The per-class accuracy metrics of the decision tree is shown in 
-\cref{tab:dt_stats}.
-The precision is the ratio $tp/(tp+fp)$ where $tp$ is the number of true
-positives and $fp$ the number of false positives. 
-It is intuitively the ability of the classifier not to label 
-as positive a sample that is negative.
-The recall is the ratio $tp/(tp+fn)$ where $tp$ is the number of true
-positives and $fn$ the number of false negatives. It is intuitively the
-ability of the classifier to find all the positive samples.
-The F1 score is a weighted average of the precision and recall 
-and is defined as:
-$$F1 = 2 * \frac{(precision * recall)}{(precision + recall)}$$
-The support is the number of occurrences of each class in the true label
-vector $y\_true$.
-
 \begin{table}[h!]
-\centering
-\small{
   \centering
   \begin{tabular}{l|llll} 
 	\toprule
@@ -238,10 +253,22 @@ vector $y\_true$.
 Avg / Total   &    0.90   &   0.91   &   0.90   &    519   \\
    \bottomrule
    \end{tabular}
- }
 \caption{Per-class accuracy metrics of the decision tree with max depth = 8.}
 \label{tab:dt_stats}
 \end{table}
 
-
+The per-class accuracy metrics of the decision tree is shown in 
+\cref{tab:dt_stats}.
+The precision is the ratio $tp/(tp+fp)$ where $tp$ is the number of true
+positives and $fp$ the number of false positives. 
+It is intuitively the ability of the classifier not to label 
+as positive a sample that is negative.
+The recall is the ratio $tp/(tp+fn)$ where $tp$ is the number of true
+positives and $fn$ the number of false negatives. It is intuitively the
+ability of the classifier to find all the positive samples.
+The F1 score is a weighted average of the precision and recall 
+and is defined as:
+$$F1 = 2 * \frac{(precision * recall)}{(precision + recall)}$$
+The support is the number of occurrences of each class in the true label
+vector $y\_true$.
 

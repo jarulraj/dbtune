@@ -12,6 +12,40 @@ an optimal DBMS configuration for a given workload for future work. The
 estimator allows us to obtain inexpensive estimates without actually running
 the workload on the DBMS under a specific configuration.
 
+
+\begin{table*}
+\centering
+  \begin{adjustbox}{max width=\textwidth}
+  \begin{tabular}{l|lll} 
+	\toprule
+   		Feature name &  Feature meaning & Default value & Mutated value set \\
+    \midrule
+    	shared\_buffers & Number of shared memory buffers used by the database
+    	server & 128 MB &  [ 4 MB, 32 MB, 128 MB, 512 MB ] \\
+    	bgwrite\_delay &  Delay between rounds for the
+    	background writer & 100 ms &  [ 100 ms, 1000 ms, 10000 ms ] \\
+    	wal\_level & Type of logging & minimal &  [ minimal, archive, hot\_standby,
+    	logical ] \\
+    	fsync & Forced synchronization to disk & on &  [ on, off ] \\
+    	synchronous\_commit & Whether transaction commit will wait for WAL records to be flushed & on &  [ on, off, local,
+    	remote\_write ] \\
+    	wal\_buffers & Number of disk-page buffers in shared memory for WAL & 
+    	-1 &  [ -1, 4 MB, 32 MB, 128 MB ] \\
+    	wal\_writer\_delay & Specifies the delay between rounds for the
+    	WAL writer & 200 ms &  [ 100 ms, 200 ms, 1000 ms, 10000 ms] \\
+    	commit\_delay & Time delay between writing a commit record to the WAL
+    	buffer & 0 $\mu$s &  [ 0 $\mu$s, 1000 $\mu$s, 1000 $\mu$s, 10000 $\mu$s] \\
+    	track\_activities & Collect query/index statistics  & on &  [ on, off ]	\\
+    	log\_planner\_stats & Log planner statistics  & off &  [ on, off ] \\
+    	debug\_print\_plan & Print plans in log  & off &  [ on, off ] \\
+    	autovacuum & Enable autovacuum subprocess  & on &  [ on, off ] \\    	    	
+   \bottomrule
+   \end{tabular}
+   \end{adjustbox}   
+\caption{Configuration attributes that we mutate in each DBMS run.}
+\label{tab:mutate}
+\end{table*}
+
 We first describe the experimental setup and information about the dataset
 in \cref{sec:setup}. Then, we present the results for the
 workload mapping/classification problem in \cref{sec:classfication} and for the
@@ -94,40 +128,6 @@ listed below :
 We added these variants to stress-test the classifiers and estimators as these
 variants can overlap with other benchmark classes along some dimensions in
 high-dimensional space. 
-
-\begin{table*}
-\centering
-  \begin{adjustbox}{max width=\textwidth}
-  \begin{tabular}{l|lll} 
-	\toprule
-   		Feature name &  Feature meaning & Default value & Mutated value set \\
-    \midrule
-    	shared\_buffers & Number of shared memory buffers used by the database
-    	server & 128 MB &  [ 4 MB, 32 MB, 128 MB, 512 MB ] \\
-    	bgwrite\_delay &  Delay between rounds for the
-    	background writer & 100 ms &  [ 100 ms, 1000 ms, 10000 ms ] \\
-    	wal\_level & Type of logging & minimal &  [ minimal, archive, hot\_standby,
-    	logical ] \\
-    	fsync & Forced synchronization to disk & on &  [ on, off ] \\
-    	synchronous\_commit & Whether transaction commit will wait for WAL records to be flushed & on &  [ on, off, local,
-    	remote\_write ] \\
-    	wal\_buffers & Number of disk-page buffers in shared memory for WAL & 
-    	-1 &  [ -1, 4 MB, 32 MB, 128 MB ] \\
-    	wal\_writer\_delay & Specifies the delay between rounds for the
-    	WAL writer & 200 ms &  [ 100 ms, 200 ms, 1000 ms, 10000 ms] \\
-    	commit\_delay & Time delay between writing a commit record to the WAL
-    	buffer & 0 $\mu$s &  [ 0 $\mu$s, 1000 $\mu$s, 1000 $\mu$s, 10000 $\mu$s] \\
-    	track\_activities & Collect query/index statistics  & on &  [ on, off ]	\\
-    	log\_planner\_stats & Log planner statistics  & off &  [ on, off ] \\
-    	debug\_print\_plan & Print plans in log  & off &  [ on, off ] \\
-    	autovacuum & Enable autovacuum subprocess  & on &  [ on, off ] \\    	    	
-   \bottomrule
-   \end{tabular}
-   \end{adjustbox}   
-\caption{Configuration attributes that we mutate in each DBMS run.}
-\label{tab:mutate}
-\end{table*}
-
 
 For each DBMS run, we first generate a configuration by picking
 values for 12 key configuration parameters listed in \cref{tab:mutate}.

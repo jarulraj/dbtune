@@ -30,7 +30,7 @@
 \ProcessOptions
 
 % Load the underlying article class.
-\LoadClass[letterpaper,11pt,twocolumn]{article}
+\LoadClass[letterpaper,10pt,twocolumn]{article}
 
 
 % Standard packages.
