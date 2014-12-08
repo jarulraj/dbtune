@@ -278,6 +278,7 @@ def estimate_performance(file, label_field, title_format, file_suffix, features_
     plt.yticks(fontproperties=TICK_FP)
     #plt.xlim(1.8,8.2)
     #plt.ylim(0.0,1.0)
+    plt.ylim(ymax=1.05)
     plt.savefig(GRAPH_DIR + "lasso_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
     plt.close()
 
@@ -315,9 +316,10 @@ def estimate_performance(file, label_field, title_format, file_suffix, features_
     plt.ylabel("R-Squared Score", fontproperties=LABEL_FP)
     for idx, measurement in enumerate(measurements):
         plt.plot(measurement['x'], measurement['y'], label=measurement['label'], color=OPT_COLORS[idx], linewidth=OPT_LINE_WIDTH, marker=OPT_MARKERS[0], markersize=OPT_MARKER_SIZE)
-    plt.legend(loc='lower right', fontsize='x-large')
+    plt.legend(loc='center right', fontsize='x-large')
     #plt.xlim(1.8,8.2)
     #plt.ylim(0.0,1.0)
+    plt.ylim(ymin=-0.45, ymax=1.05)
     plt.xticks(fontproperties=TICK_FP)
     plt.yticks(fontproperties=TICK_FP)
     plt.savefig(GRAPH_DIR + "gp_{0}.pdf".format(file_suffix), format="pdf", dpi=1000)
@@ -476,4 +478,4 @@ if __name__ == '__main__':
     estimate_performance(args.file, LATENCY_AVG_LABEL_FIELD, "Using {0} to Estimate Latency", "latency" + suffix, features_to_discard)
 
     per_benchmark_gp(args.file, THROUGHPUT_LABEL_FIELD, "Using {0} to Estimate Throughput", "Throughput (transactions/second)", (-2000, 10000), 12, (0, 20), "throughput" + suffix, features_to_discard)
-    per_benchmark_gp(args.file, LATENCY_AVG_LABEL_FIELD, "Using {0} to Estimate Latency", "Latency (milliseconds)", (-2, 10), 12, (0, 175), "latency" + suffix, features_to_discard)
+    per_benchmark_gp(args.file, LATENCY_AVG_LABEL_FIELD, "Using {0} to Estimate Latency", "Latency (milliseconds)", (-2, 10), 12, (0, 100), "latency" + suffix, features_to_discard)
