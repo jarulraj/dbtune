@@ -1,17 +1,12 @@
-\section{Evaluation} \label{sec:eval}
+\section{Experimental Setup} \label{sec:eval}
 
-We address two problems in our experiments :
+We address two problems in our experiments :\\
+
 \begin{itemize}
 	\item Mapping a SQL workload to a benchmark class.
 	\item Estimating the performance of the DBMS using the features and the class
-	model.
+	model without actually executing the workload.\\
 \end{itemize}
-
-We note that we leave the problem of using the performance estimator to find
-an optimal DBMS configuration for a given workload for future work. The
-estimator allows us to obtain inexpensive estimates without actually running
-the workload on the DBMS under a specific configuration.
-
 
 \begin{table*}
 \centering
@@ -46,12 +41,6 @@ the workload on the DBMS under a specific configuration.
 \label{tab:mutate}
 \end{table*}
 
-We first describe the experimental setup and information about the dataset
-in \cref{sec:setup}. Then, we present the results for the
-workload mapping/classification problem in \cref{sec:classfication} and for the
-performance estimation problem in \cref{sec:estimation}. Finally, we discuss
-the conclusions and future work in \cref{sec:conclusion}.
-
 \begin{figure*}
     \centering
     \includegraphics[width=\textwidth]{figure/clustering.pdf}
@@ -82,47 +71,29 @@ the conclusions and future work in \cref{sec:conclusion}.
     \label{fig:clustering-metrics}
 \end{figure*}
 
-\subsection{Experimental Setup}
-\label{sec:setup}
-
-All our experiments are performed on the machine described in \cref{tab:setup}.
+We first describe the experimental setup and later present information about the
+dataset.
+All our experiments are performed on a machine with 8-core Intel i7-3770 running
+at 3.7 GHz. The system has 16 GiB DRAM. The L2 and L3 cache sizes are 256 KiB
+and 8 MiB respectively.
 We deploy Linux kernel 3.2.0 on the machine and disable logical processor
-support (“Hyper-Threading”).
+support.
 We use the Scikit \citep{scikit-learn} framework in Python 3 for
 evaluating different machine learning algorithms.
 Our auto-tuning framework currently only supports Postgres 9.5. We plan to
 extend it to support other database management systems like MySQL in future
 work.
 
-\begin{table}
-\centering
-\small{
-  \centering
-  \begin{tabular}{l|l} 
-	\toprule
-   		Attribute &  Value  \\    
-    \midrule
-		CPU   &   8 cores (Intel i7-3770 @ 3.7 GHz)  \\
-		DRAM   &  16 GiB  \\
-		L2 cache  &  256 KiB  \\
-		L3 cache  &  8 MiB  \\		
-   \bottomrule
-   \end{tabular}
- }
-\caption{Experimental setup.}
-\label{tab:setup}
-\end{table}
-
 The dataset consists of 10 benchmark classes. These include all the benchmarks
 described in \cref{tab:benchmarks}. We consider 4 variants of the YCSB key-value
 store benchmark. These variants map to different read-write mixtures and are
-listed below :
+listed below :\\
 
 \begin{itemize}
   \item {Read-only : 100\% reads 0\% writes } 
   \item {Read-heavy : 80\% reads 20\% writes } 
   \item {Balanced : 50\% reads 50\% writes } 
-  \item {Write-heavy : 20\% reads 80\% writes } 
+  \item {Write-heavy : 20\% reads 80\% writes } \\
 \end{itemize}
 
 We added these variants to stress-test the classifiers and estimators as these
@@ -134,10 +105,10 @@ values for 12 key configuration parameters listed in \cref{tab:mutate}.
 We then select a random benchmark and alter the transaction mix of the
 benchmark i.e. the proportion of different types of transactions in 
 the specific benchmark. After running the benchmark for atleast more than
-1 minute, we halt the system.  We then collect the dynamic features from the
+1 minute, we halt the system, and collect the dynamic features from the
 DBMS and the benchmarking framework. We also collect the static features
 from the specific DBMS configuration. These features and metrics constitute
 one sample in the dataset.
-Each sample consists of 272 features and our dataset consists of 1000
+Each sample consists of 263 features and our dataset consists of 1000
 such samples.
 

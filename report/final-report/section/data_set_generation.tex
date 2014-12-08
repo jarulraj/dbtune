@@ -16,11 +16,11 @@ testing purposes. As we mentioned earlier, while this synthetic data will not be
 representative of real-world workloads, we feel it is a good starting point for
 evaluating viability of the approach outlined above.
 We extract several features from the workload such as types of database queries,
-distribution of query types, table access patterns, etc. using 
+distribution of query types, and table access patterns using 
 a workload analyzer. We hook this analyzer into Postgres~\citep{postgres91} to collect 
 features from the DBMS.
 
-The key reasons for why we use this framework to generate the dataset 
+The key reasons for why we use OLTP-Bench framework to generate the dataset 
 are the following:
 
 \begin{itemize}
@@ -32,7 +32,7 @@ are the following:
   \item It supports user-defined configuration of the rate at which the
   transaction requests are submitted to the DBMS. This allows us to emulate
   different world workloads with varying degrees of concurrency.
-  \item The framework exposes statistics that are complementary to the 
+  \item It exposes statistics that are complementary to the 
   internal statistics of the DBMS~\citep{postgres14}. We extract features from
   these statistics.
 \end{itemize}
@@ -44,7 +44,7 @@ workload mixture in all the benchmarks to generate different variants and
 emulate real world workloads. The key characteristics of the benchmarks
 that we use for generating the dataset are presented in \cref{tab:benchmarks}.
 
-\begin{table*}
+\begin{table*}[ht!]
   \centering
   \begin{adjustbox}{max width=\textwidth}
   \begin{tabular}{l|lllllllll} \toprule

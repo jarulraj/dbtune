@@ -1,6 +1,6 @@
 \section{Classification} \label{sec:classfication}
 
-We addressed the problem of mapping a workload to a standard benchmark class
+We approach the problem of mapping a workload to a standard benchmark class
 using two techniques. 
 
 \subsection{Clustering}
@@ -92,25 +92,27 @@ within all clusters that is effectively a variance-minimizing approach.
 The clusters found by each algorithm in high-dimensional space are shown in
 \cref{fig:clusters}.
 We computed standard clustering metrics for each algorithm including the
-following :
+following :\\
 
 \begin{itemize}
   \item \textbf{Homogeneity}:
 	Given a ground truth, this metric computes if all the clusters contain only
-	data points which are members of a single class.
+	data points which are members of a single class.\\
+
   \item \textbf{Completeness}: 
 	Given a ground truth, this metric computes if all the data points that are
-	members of a given class are elements of the same cluster.
+	members of a given class are elements of the same cluster.\\
+
   \item \textbf{V-measure}: 
 	This metric is the harmonic mean between homogeneity and completeness
 	\citep{v-measure}.
 
-	$$v = 2 * \frac{(homogeneity * completeness)}{(homogeneity + completeness)}$$
+	$$v = 2 * \frac{(homogeneity * completeness)}{(homogeneity + completeness)}$$\\
 
   \item \textbf{Silhouette coefficient}: 
   This metric is computed using the mean intra-cluster distance
   $a$ and the mean nearest-cluster distance $b$ for each sample.
-  It is defined for each sample as $(b-a)/max(a, b)$.
+  It is defined for each sample as $(b-a)/max(a, b)$.\\
 \end{itemize}
 
 These results are presented in \cref{fig:clustering-metrics}. We observe that
@@ -120,7 +122,7 @@ Both these algorithms require number of clusters as a parameter.
 However, this is not a restriction for our problem as we know the number of
 benchmarks - and hence the number of clusters - that we have.
 Algorithms like Affinity-Propagation and Mean-Shift give very high and 
-very low estimates for the number of clusters in the dataset.
+very low estimates for the number of clusters in the dataset respectively.
 As we required higher classification accuracy and better intuition about
 the classifier, we also experimented with SVM classifiers and decision trees. 
 We finally decided to use decision trees as they met both our accuracy
@@ -147,7 +149,7 @@ It creates a model for predicting the class of a sample by learning
 simple decision rules inferred from the sample features\citep{stats01}.
 These trees can be interpreted easily and visualised.
 We however need to be careful not to create overly complex trees 
-that do not generalise the data well i.e. we should avoid overfitting. 
+that do not generalise the data well, i.e. we should avoid overfitting. 
 
 Given a set of training samples $x_i \in R^n$, $i=1,...,l$ and the
 corresponding label vector $y \in R^l$, the decision tree partitions 
@@ -177,8 +179,8 @@ $$p_{mk} = 1/ N_m \sum_{x_i \in R_m} I(y_i = k)$$
 We use the \textit{Gini measure} as the impurity measure:
 $$H(X_m) = \sum_k p_{mk} (1 - p_{mk})$$
 
-The algorithm is an optimized version of the CART (Classification and Regression
-Trees) algorithm\citep{cart84}.
+The implementation uses an optimized version of the CART (Classification and
+Regression Trees) algorithm\citep{cart84}.
 It basically constructs binary trees using the feature and threshold that
 yield the largest information gain at each node.
 The features need not be categorical as the algorithm dynamically 
@@ -186,9 +188,25 @@ defines a discrete attribute based on numerical variables that
 partitions the continuous attribute value into a discrete set of intervals. 
 It does not compute rule sets unlike the C4.5 algorithm\citep{quinlan93}.
 
-A sample decision tree with maximum depth throttled to $4$ is shown in
-\cref{fig:tree_sample}. We obtain $76\%$ accuracy with this short tree
-and derive these interesting observations :
+A sample decision tree with maximum depth limited to $4$ is shown in
+\cref{fig:tree_sample}. We obtain $76\%$ accuracy with this short tree.
+The per-class accuracy metrics of the decision tree is shown in 
+\cref{tab:dt_stats}.
+The precision is the ratio $tp/(tp+fp)$ where $tp$ is the number of true
+positives and $fp$ the number of false positives. 
+It is intuitively the ability of the classifier not to label 
+as positive a sample that is negative.
+The recall is the ratio $tp/(tp+fn)$ where $tp$ is the number of true
+positives and $fn$ the number of false negatives. It is intuitively the
+ability of the classifier to find all the positive samples.
+The F1 score is a weighted average of the precision and recall 
+and is defined as:
+$$F1 = 2 * \frac{(precision * recall)}{(precision + recall)}$$
+The support is the number of occurrences of each class in the true label
+vector $y\_true$.
+
+These are some interesting observations derived from the decision tree shown in 
+\cref{fig:tree_sample}:\\
 
 \begin{itemize}
   \item Wikipedia benchmark performs a lot of index scans.
@@ -198,7 +216,7 @@ and derive these interesting observations :
   \item Auctionmark benchmark has less locality of reference i.e. the number of
   disk block cache hits is low.
   \item Twitter benchmark also fetches several rows per transaction. However, it
-  does not perform any sequential scans.
+  does not perform any sequential scans.\\
 \end{itemize}
 
 \begin{figure*}
@@ -257,18 +275,4 @@ Avg / Total   &    0.90   &   0.91   &   0.90   &    519   \\
 \label{tab:dt_stats}
 \end{table}
 
-The per-class accuracy metrics of the decision tree is shown in 
-\cref{tab:dt_stats}.
-The precision is the ratio $tp/(tp+fp)$ where $tp$ is the number of true
-positives and $fp$ the number of false positives. 
-It is intuitively the ability of the classifier not to label 
-as positive a sample that is negative.
-The recall is the ratio $tp/(tp+fn)$ where $tp$ is the number of true
-positives and $fn$ the number of false negatives. It is intuitively the
-ability of the classifier to find all the positive samples.
-The F1 score is a weighted average of the precision and recall 
-and is defined as:
-$$F1 = 2 * \frac{(precision * recall)}{(precision + recall)}$$
-The support is the number of occurrences of each class in the true label
-vector $y\_true$.
 

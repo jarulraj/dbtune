@@ -1,25 +1,25 @@
 \section{Feature Extraction} \label{sec:features}
 
-We collect 3 types of features from both the DBMS as well as the benchmarking
-framework.
+We collect three types of features from both the DBMS as well as the
+benchmarking framework.
 
 \subsection{Features from OLTP-Bench }
 
   After executing the benchmark, we obtain statistics about the latency and
   throughput delivered by the DBMS.
   This includes both temporal performance metrics as well as aggregate metrics. 
-  We then record the size of the workload also known as the
-  \textit{scalefactor}.
-  The \textit{isolation level} of the DBMS correlates strongly with performance
-  metrics Stricter isolation levels like ``serializable level'' correlate with lower
-  performance because the DBMS needs to maintain the constraints regarding
-  the visibility of effects of concurrent transactions. 
-  
+%   We then record the size of the workload also known as the
+%   \textit{scalefactor}.
+%   The \textit{isolation level} of the DBMS correlates strongly with performance
+%   metrics Stricter isolation levels like ``serializable level'' correlate with lower
+%   performance because the DBMS needs to maintain the constraints regarding
+%   the visibility of effects of concurrent transactions. 
   We also record the type
-  of DBMS used. Although currently we focus only on Postgres, 
+  of DBMS used. Although currently we focus only on Postgres\citep{postgres91}, 
   we anticipate this tool to be useful for other DBMSs as well.   
   We also record the expected label i.e. the benchmark name. This is used for
   evaluating the accuracy of our classification algorithms.  
+  
   
 \subsection{Static parameters from Postgres}
 
@@ -41,7 +41,7 @@ framework.
     \item {fsync: Durability requirements of data.}
     \item {Sequential page cost: Used in the cost model of the DBMS' planner.}
 	\item {Hardware features: CPU cache sizes, DRAM size, disk size, cache latency,
-	DRAM latency and disk latency.}
+	DRAM latency and disk latency.}\\
   \end{itemize}
   
   Overall, these metrics significantly impact the performance of the DBMS. A
@@ -70,7 +70,7 @@ framework.
     \item {Status of different storage backends of the DBMS.}
     \item {Size of the tables and indexes in the DBMS.}
     \item {Number of sequential scans and index scans performed by the
-    workload.}
+    workload.}\\
   \end{itemize}
   
   	We normalize the relevant metrics by the number of transactions executed.
