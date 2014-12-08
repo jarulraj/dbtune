@@ -73,12 +73,16 @@
   \label{tab:influential_features_for_latency}
 \end{table*}
 
-We estimate expected performance of each benchmark on a given database
-configuration for the second phase of our solution. In doing so, we
-hope to approximately estimate the performance of the target workload
-through the estimation for the benchmark it maps to. As such, we train
-two estimators for each benchmark: one for database throughput and one
-for database latency.
+We estimate expected performance of the DBMS on a given database configuration
+while executing each benchmark in the second part of our solution. 
+In doing so, we hope to approximately estimate the performance of the target
+workload using the model for the benchmark that the classifier in 
+\cref{sec:classfication} maps the workload to.
+As such, we train two estimators for each benchmark: one for database 
+throughput and one for database latency.
+
+\subsection{Gaussian Process Regression}
+\label{sec:gp}
 
 We chose to use Gaussian Process Regression, a supervised learning
 method, for this task as it works well for estimating regressions with
@@ -86,9 +90,11 @@ no prior knowledge about distribution. It also gives a probabilistic
 estimation, allowing for further insight about bounds and probability
 of exceeding them. The Gaussian Process Regression models the data
 with the function
+
 \begin{equation*}
 G(X) = f(X)^{\textrm{T}}\beta + Z(X)
 \end{equation*}
+
 where $f(X)^{\textrm{T}}\beta$ is a linear regression model and $Z(X)$
 is a Gaussian process with zero mean. $X$ is the input, represented as
 a vector of feature values.  In this model, we try to find the ``best
@@ -97,18 +103,22 @@ data. That is, we try to find the best function for
 $\hat{G}(X) = G(X|\textrm{training data})$. Under the model, it can be
 shown that $\hat{G}(X) = a(X)^{\textrm{T}}y$ where $a(X)$ is the
 product of the weights with the feature values. From this model, we
-can find the we can find the BLUP by solving the optimization problem
+can find the BLUP by solving the following optimization problem:
+
 \begin{equation*}
 a(X)^* = \arg \min\limits_{a(X)} \mathbb{E}[(G(X) - a(X)^T y)^2]
 \end{equation*}
+
 subject to the constraint $\mathbb{E}[G(X) - a(X)^T y] = 0$. Gaussian
 Processes are amenable to kernels, although they are used as
 correlations in this model. We use the absolute exponential
 autocorrelation model in our experiments. This covariance model
-calculates autocorrelation of a vector X as
+calculates autocorrelation of a vector X as:
+
 \begin{equation*}
   \exp\left( \sum_{i = 1}^n -\theta_0 |\Delta X_i| \right)
 \end{equation*}
+
 where $\theta_0$ is a the autocorrelation parameter and $\Delta X$ is
 the component-wise distances at which the correlation should be
 calculated. We experimented with various values of $\theta_0$ and
@@ -116,10 +126,12 @@ settled on $\theta_0 = 0.001$ as it exhibited the best performance, as
 seen in \cref{fig:gp_theta0s}.
 
 One way to measure the performance of a regression model is the
-$\textrm{R}^2$ score defined as
+$\textrm{R}^2$ score defined as:
+
 \begin{equation*}
   \textrm{R}^2 \equiv 1 - \frac{\textrm{SS}_{res}}{\textrm{SS}_{tot}}
 \end{equation*}
+
 In this definition, $\textrm{SS}_{res} = \sum_i (y_i - f_i)^2$ where
 $y_i$ is the true value and $f_i$ is the predicted value. This term is
 also known as the residual sum of squares. The other term in the
@@ -135,12 +147,12 @@ values. \cref{fig:gp_r2} shows
 the median $\textrm{R}^2$ score across the estimators for all
 benchmarks as a red line. The shaded green region indicates a single
 standard deviation spread. We infer from the figures that we can
-achieve a very good estimation with as few as 600 samples. In
+train a good estimator with as few as 600 samples. In
 addition, the estimators become collectively better as more data is
 provided, as evidenced by the shrinking green region as number of
 samples increases.
 
-One example of a good performance estimator is the latency estimator
+One example of a highly accurate performance estimator is the latency estimator
 for the Wikipedia benchmark. This estimator has a high $\textrm{R}^2$
 score of 0.9734. Looking at the actual and predicted latency values in
 \cref{fig:latency_wikipedia}, we find that the
@@ -149,7 +161,7 @@ slight dip into negative latency predictions. We believe this
 estimator can be even stronger if we encode constraints for possible
 predictions, such as positive values only.
 
-One example of a poorer performance estimator is the throughput
+One example of a less accurate performance estimator is the throughput
 estimator for the balanced YCSB benchmark. This estimator has a lower
 $\textrm{R}^2$ score of 0.7090. Looking at the actual and predicted
 throughput values in \cref{fig:throughput_ycsb_balanced}, we see that
@@ -160,16 +172,21 @@ as load on the machine and other processes' resource usages. A more
 ``global'' set of features across the whole system rather than just
 pertaining to the database may help train better estimators.
 
+\subsection{Lasso Regression}
+\label{sec:lasso}
+
 To gain more insight about what parameters affected performance the
 most, we performed Lasso Regression to determine the most influential
 features. Lasso regression encourages sparse coefficients in its
 solution, so it is a good method for finding the most important
-features for a particular problem. It works by optimizing the
-objective function
+features for a particular problem. It works by optimizing this
+objective function :
+
 \begin{equation*}
   \min\limits_{w}
   \frac{1}{2n_{\textrm{samples}}} \|Xw - y\|_2^2 + \alpha \|w\|_1
 \end{equation*}
+
 which is a simple least squares linear regression with the lasso
 constraint added under weight $\alpha$. A higher value for $\alpha$
 encourages sparser solutions while a lower value relaxes this
@@ -183,16 +200,20 @@ on using $\alpha = 0.001$ as it exhibited the best performance, as seen in
 intuition, throughput seems to be greatly affected by all operation
 types along with options that add delays (e.g. bgwriter\_delay,
 commit\_delay) or constrain how relaxed the database can be about
-transaction execution (e.g. fsync, synchronous\_commit). However, it
-is interesting to note that latency seems primarily affected only by
-operations that take a long time to complete and not the type of
-operations or hard delays introduced into the system.
+transaction execution (e.g. fsync, synchronous\_commit). It
+is, however, very interesting to note that latency seems 
+primarily affected only by operations that take a long time to 
+complete and not the type of operations or hard delays introduced into the
+system.
 
 In a practical implementation of our estimator, we will not be able
-to collect performance statistics before estimating performance for
-different configurations. As such, we eliminated the features
-pertaining to throughput and latency from consideration. However,
-these features are available in the training data. We believe that a
-better learner will use graphical models to infer the missing
-throughput and performance information for the test data before
-estimation. We will explore this technique in the future.
+to collect performance statistics while estimating performance for
+a specific configuration as we do not actually execute the workload
+in that configuraion. So, we eliminated the features pertaining to 
+throughput and latency from consideration while estimating 
+performance metrics.
+However, these features are available in the training dataset. 
+We believe that we can use graphical models to infer these 
+missing throughput and performance features in the test data 
+before estimation. We plan to explore this technique in 
+future work.
