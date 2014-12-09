@@ -74,11 +74,11 @@
 \end{table*}
 
 We estimate expected performance of the DBMS on a given database configuration
-while executing each benchmark in the second part of our solution. 
+while executing each benchmark in the second part of our solution.
 In doing so, we hope to approximately estimate the performance of the target
-workload using the model for the benchmark that the classifier in 
+workload using the model for the benchmark that the classifier in
 \cref{sec:classfication} maps the workload to.
-As such, we train two estimators for each benchmark: one for database 
+As such, we train two estimators for each benchmark: one for database
 throughput and one for database latency.
 
 \subsection{Gaussian Process Regression}
@@ -147,14 +147,15 @@ values. \cref{fig:gp_r2} shows
 the median $\textrm{R}^2$ score across the estimators for all
 benchmarks as a red line. The shaded green region indicates a single
 standard deviation spread. We infer from the figures that we can
-train a good estimator with as few as 600 samples. In
+train a good estimator with as few as 400 samples for latency and 900
+samples for throughput. In
 addition, the estimators become collectively better as more data is
 provided, as evidenced by the shrinking green region as number of
 samples increases.
 
 One example of a highly accurate performance estimator is the latency estimator
 for the Wikipedia benchmark. This estimator has a high $\textrm{R}^2$
-score of 0.9734. Looking at the actual and predicted latency values in
+score of 0.9895. Looking at the actual and predicted latency values in
 \cref{fig:latency_wikipedia}, we find that the
 predicted distribution mimics the actual one very closely, with only a
 slight dip into negative latency predictions. We believe this
@@ -163,7 +164,7 @@ predictions, such as positive values only.
 
 One example of a less accurate performance estimator is the throughput
 estimator for the balanced YCSB benchmark. This estimator has a lower
-$\textrm{R}^2$ score of 0.7090. Looking at the actual and predicted
+$\textrm{R}^2$ score of 0.7399. Looking at the actual and predicted
 throughput values in \cref{fig:throughput_ycsb_balanced}, we see that
 the estimator fails to handle the holes in throughput seen in the
 actual values. We believe these isolated throughput values are due to
@@ -201,19 +202,19 @@ intuition, throughput seems to be greatly affected by all operation
 types along with options that add delays (e.g. bgwriter\_delay,
 commit\_delay) or constrain how relaxed the database can be about
 transaction execution (e.g. fsync, synchronous\_commit). It
-is, however, very interesting to note that latency seems 
-primarily affected only by operations that take a long time to 
+is, however, very interesting to note that latency seems
+primarily affected only by operations that take a long time to
 complete and not the type of operations or hard delays introduced into the
 system.
 
 In a practical implementation of our estimator, we will not be able
 to collect performance statistics while estimating performance for
 a specific configuration as we do not actually execute the workload
-in that configuraion. So, we eliminated the features pertaining to 
-throughput and latency from consideration while estimating 
+in that configuraion. So, we eliminated the features pertaining to
+throughput and latency from consideration while estimating
 performance metrics.
-However, these features are available in the training dataset. 
-We believe that we can use graphical models to infer these 
-missing throughput and performance features in the test data 
-before estimation. We plan to explore this technique in 
+However, these features are available in the training dataset.
+We believe that we can use graphical models to infer these
+missing throughput and performance features in the test data
+before estimation. We plan to explore this technique in
 future work.

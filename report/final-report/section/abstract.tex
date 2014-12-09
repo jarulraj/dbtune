@@ -9,13 +9,13 @@ system to guide the physical design of the database. However, these methods
 still require experienced administrators and prior knowledge about the
 workload. We apply machine learning methods to automate database
 system tuning with minimal user input and knowledge by mapping
-workloads to representative benchmarks and then estimating 
-performance metrics using a machine learning model without actually 
+workloads to representative benchmarks and then estimating
+performance metrics using a machine learning model without actually
 running the workload.
 Our experiments show that a CART-based decision tree classifier
-achieves 91\% accuracy on the classification problem.
-We also demonstrate that a Gaussian process regression estimator
-has a R-squared score of 0.9 for estimating the throughput of
-the DBMS while executing a SQL workload under a given
-DBMS configuration. 
+achieves 80 \% accuracy on the classification problem.
+We also demonstrate that Gaussian process regression estimators
+achieve a median R-squared score of 0.98 for estimating the latency and 0.95 for
+estimating the throughput while executing a SQL workload under a given
+DBMS configuration.
 \end{abstract}

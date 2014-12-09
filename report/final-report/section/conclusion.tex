@@ -1,31 +1,31 @@
 \section{Conclusion} \label{sec:conclusion}
 
 DBMS performance tuning is a niche skill that requires much experience
-and experimentation to get right. Machine learning techniques can help 
-automate this process by using prior knowledge to estimate the 
-performance of the DBMS on a particular SQL workload 
-without having to actually execute it. 
-To achieve this goal, we have taken a two-step approach where 
-we first map a workload to a well-known benchmark. 
+and experimentation to get right. Machine learning techniques can help
+automate this process by using prior knowledge to estimate the
+performance of the DBMS on a particular SQL workload
+without having to actually execute it.
+To achieve this goal, we have taken a two-step approach where
+we first map a workload to a well-known benchmark.
 Armed with this information, we then use a benchmark-specific
-regression estimator to obtain performance estimates 
+regression estimator to obtain performance estimates
 under different DBMS configurations.
 
-Using decision trees, we find that we can classify workloads 
-using a few defining features.  
+Using decision trees, we find that we can classify workloads
+using a few defining features.
 Our experiments show that a CART-based decision tree classifier
 achieves 91\% accuracy on the classification problem.
-Thus, the decision trees learned to effectively discriminate 
+Thus, the decision trees learned to effectively discriminate
 between the different benchmark classes.
-We use Gaussian Process Regression estimators for predicting 
+We use Gaussian Process Regression estimators for predicting
 the throughput and latency of the DBMS while executing a
 SQL workload under a particular configuration.
-We demonstrate that this estimator achieves a R-squared score 
-of 0.9. 
-Furthermore, these highly accurate estimators can be trained 
-with as few as 600 samples. 
-Our analysis using Lasso Regression estimators provided key 
-insights into the features that are most influential in 
+We demonstrate that these estimators achieve a median R-squared score
+of 0.98 for estimating latency and 0.95 for estimating throughput.
+Furthermore, these highly accurate estimators can be trained
+with as few as 400 samples for latency and 900 samples for throughput.
+Our analysis using Lasso Regression estimators provided key
+insights into the features that are most influential in
 determining throughput and latency.
 
 In our experiments, we generate synthetic variants of the
@@ -33,15 +33,15 @@ benchmarks in OLTPBench to emulate real-world workloads as
 we felt that it is a good starting point for evaluating the
 viability of our techniques.
 We plan to continue our evaluation using a larger real-world
-dataset that includes more realistic samples. 
-We note that we leave the problem of using the performance 
-estimator to find an optimal DBMS configuration for a given 
-workload for future work. The estimator allows us to obtain 
-inexpensive estimates without actually running the workload 
+dataset that includes more realistic samples.
+We note that we leave the problem of using the performance
+estimator to find an optimal DBMS configuration for a given
+workload for future work. The estimator allows us to obtain
+inexpensive estimates without actually running the workload
 under a specific configuration.
-In addition, we will extend our auto-tuning framework to 
-support other DBMSs like MySQL, and more hardware profiles. 
-We anticipate that this larger and more realistic dataset 
-will help us obtain additional insights about how best to 
-tune the DBMS configuration to maximize performance on 
+In addition, we will extend our auto-tuning framework to
+support other DBMSs like MySQL, and more hardware profiles.
+We anticipate that this larger and more realistic dataset
+will help us obtain additional insights about how best to
+tune the DBMS configuration to maximize performance on
 arbitrary SQL workloads.

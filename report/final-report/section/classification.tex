@@ -188,8 +188,10 @@ defines a discrete attribute based on numerical variables that
 partitions the continuous attribute value into a discrete set of intervals.
 It does not compute rule sets unlike the C4.5 algorithm\citep{quinlan93}.
 
-A sample decision tree with maximum depth limited to $4$ is shown in
-\cref{fig:tree_sample}. We obtain $76\%$ accuracy with this short tree.
+A sample decision tree with maximum number of leaf nodes limited to $8$ is shown in
+\cref{fig:tree_sample}. We obtain $67\%$ accuracy with this small
+tree. Note that there are more benchmark classes than maximum number
+of leaf nodes so higher accuracy can be achieved with larger trees.
 The per-class accuracy metrics of the decision tree is shown in
 \cref{tab:dt_stats}.
 The precision is the ratio $tp/(tp+fp)$ where $tp$ is the number of true
@@ -209,14 +211,9 @@ These are some interesting observations derived from the decision tree shown in
 \cref{fig:tree_sample}:\\
 
 \begin{itemize}
-  \item Wikipedia benchmark performs a lot of index scans.
-  \item SEATS benchmark involves fetching several rows per transaction.
-  \item Epinions benchmark, on the other hand, involves returning several rows
-  per transaction.
-  \item Auctionmark benchmark has less locality of reference i.e. the number of
-  disk block cache hits is low.
-  \item Twitter benchmark also fetches several rows per transaction. However, it
-  does not perform any sequential scans.\\
+  \item Twitter and Wikipedia perform no sequential scans.
+  \item YCSB Write-Heavy and Auctionmark perform many index scans.
+  \item YCSB Read-Heavy has few disk block cache hits.\\
 \end{itemize}
 
 \begin{figure*}
@@ -240,7 +237,7 @@ These are some interesting observations derived from the decision tree shown in
 \end{figure*}
 
 
-The accuracy increases quickly to $91\%$ with a maximum depth of $8$. The impact
+The accuracy increases quickly to $80\%$ with a maximum depth of $8$. The impact
 of maximum tree depth on the accuracy of the decision tree classifier
 is presented in \cref{fig:tree_depth}. Using three-way cross validation,
 we verified that the tree is able to classify the dataset accurately
@@ -254,23 +251,23 @@ depth as expected.
 \begin{table}[h!]
   \centering
   \begin{tabular}{l|llll}
-	\toprule
-   		Class &  Precision  &  Recall &  F1-score  &  Support  \\
+    \toprule
+    Class            & Precision & Recall & F1-score & Support \\
     \midrule
-		0.0   &    1.00   &   0.00   &   1.00   &     84   \\
-        1.0   &    0.99   &   1.00   &   0.99   &     74   \\
-        2.0   &    0.98   &   0.99   &   0.98   &     81   \\
-        3.0   &    0.54   &   0.39   &   0.45   &     18   \\
-        4.0   &    1.00   &   1.00   &   1.00   &     69   \\
-        5.0   &    1.00   &   0.99   &   0.99   &     70   \\
-        6.0   &    1.00   &   0.95   &   0.97   &     60   \\
-        7.0   &    0.41   &   0.95   &   0.57   &     19   \\
-        8.0   &    0.00   &   0.00   &   0.00   &     17   \\
-        9.0   &    0.56   &   0.52   &   0.54   &     27   \\
+    YCSB B    & 0.60      & 0.39   & 0.47     & 31      \\
+    Twitter          & 0.57      & 0.74   & 0.64     & 142     \\
+    TPCC             & 1.00      & 1.00   & 1.00     & 63      \\
+    Auctionmark      & 0.74      & 0.56   & 0.64     & 180     \\
+    Epinions         & 0.99      & 0.97   & 0.98     & 161     \\
+    Wikipedia        & 0.99      & 0.99   & 0.99     & 162     \\
+    YCSB RH  & 0.63      & 0.86   & 0.73     & 37      \\
+    YCSB RO   & 0.39      & 0.70   & 0.50     & 40      \\
+    TATP             & 0.99      & 0.96   & 0.97     & 147     \\
+    YCSB WH & 0.58      & 0.18   & 0.28     & 38      \\
     \midrule
-Avg / Total   &    0.90   &   0.91   &   0.90   &    519   \\
+    Avg / Total      & 0.82      & 0.81   & 0.80     & 1001    \\
    \bottomrule
-   \end{tabular}
+  \end{tabular}
 \caption{Per-class accuracy metrics of the decision tree with max depth = 8.}
 \label{tab:dt_stats}
 \end{table}
