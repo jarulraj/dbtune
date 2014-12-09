@@ -11,7 +11,7 @@ We address two problems in our experiments :\\
 \begin{table*}
 \centering
   \begin{adjustbox}{max width=\textwidth}
-  \begin{tabular}{l|lll} 
+  \begin{tabular}{l|lll}
 	\toprule
    		Feature name &  Feature meaning & Default value & Mutated value set \\
     \midrule
@@ -24,7 +24,7 @@ We address two problems in our experiments :\\
     	fsync & Forced synchronization to disk & on &  [ on, off ] \\
     	synchronous\_commit & Whether transaction commit will wait for WAL records to be flushed & on &  [ on, off, local,
     	remote\_write ] \\
-    	wal\_buffers & Number of disk-page buffers in shared memory for WAL & 
+    	wal\_buffers & Number of disk-page buffers in shared memory for WAL &
     	-1 &  [ -1, 4 MB, 32 MB, 128 MB ] \\
     	wal\_writer\_delay & Specifies the delay between rounds for the
     	WAL writer & 200 ms &  [ 100 ms, 200 ms, 1000 ms, 10000 ms] \\
@@ -33,10 +33,10 @@ We address two problems in our experiments :\\
     	track\_activities & Collect query/index statistics  & on &  [ on, off ]	\\
     	log\_planner\_stats & Log planner statistics  & off &  [ on, off ] \\
     	debug\_print\_plan & Print plans in log  & off &  [ on, off ] \\
-    	autovacuum & Enable autovacuum subprocess  & on &  [ on, off ] \\    	    	
+    	autovacuum & Enable autovacuum subprocess  & on &  [ on, off ] \\
    \bottomrule
    \end{tabular}
-   \end{adjustbox}   
+   \end{adjustbox}
 \caption{Configuration attributes that we mutate in each DBMS run.}
 \label{tab:mutate}
 \end{table*}
@@ -50,7 +50,7 @@ We address two problems in our experiments :\\
 
 \begin{figure*}
     \centering
-    \begin{adjustbox}{max width=\textwidth}    
+    \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{llllll}
       \toprule
       Algorithm                     & Homogeneity & Completeness & V-Measure &
@@ -58,11 +58,11 @@ We address two problems in our experiments :\\
       \midrule
       K-Means                       & 0.607       & 0.592        & 0.600   & 10
       & 0.106  \\
-      Affinity-Propagation          & 0.654       & 0.317        & 0.427   & 88 
+      Affinity-Propagation          & 0.654       & 0.317        & 0.427   & 88
       & 0.082  \\
       Mean-Shift                    & 0.012       & 0.368        & 0.024   & 2
       & 0.517 \\
-      Ward Agglomerative Clustering & 0.589       & 0.635        & 0.611   & 10 
+      Ward Agglomerative Clustering & 0.589       & 0.635        & 0.611   & 10
       & 0.097 \\
       \bottomrule
     \end{tabular}
@@ -90,20 +90,20 @@ store benchmark. These variants map to different read-write mixtures and are
 listed below :\\
 
 \begin{itemize}
-  \item {Read-only : 100\% reads 0\% writes } 
-  \item {Read-heavy : 80\% reads 20\% writes } 
-  \item {Balanced : 50\% reads 50\% writes } 
+  \item {Read-only : 100\% reads 0\% writes }
+  \item {Read-heavy : 80\% reads 20\% writes }
+  \item {Balanced : 50\% reads 50\% writes }
   \item {Write-heavy : 20\% reads 80\% writes } \\
 \end{itemize}
 
 We added these variants to stress-test the classifiers and estimators as these
 variants can overlap with other benchmark classes along some dimensions in
-high-dimensional space. 
+high-dimensional space.
 
 For each DBMS run, we first generate a configuration by picking
 values for 12 key configuration parameters listed in \cref{tab:mutate}.
 We then select a random benchmark and alter the transaction mix of the
-benchmark i.e. the proportion of different types of transactions in 
+benchmark i.e. the proportion of different types of transactions in
 the specific benchmark. After running the benchmark for atleast more than
 1 minute, we halt the system, and collect the dynamic features from the
 DBMS and the benchmarking framework. We also collect the static features
@@ -111,4 +111,3 @@ from the specific DBMS configuration. These features and metrics constitute
 one sample in the dataset.
 Each sample consists of 263 features and our dataset consists of 1000
 such samples.
-
